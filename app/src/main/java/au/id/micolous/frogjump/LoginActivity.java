@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
@@ -18,6 +19,7 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.appspot.frogjump_cloud.frogjump.Frogjump;
 import com.appspot.frogjump_cloud.frogjump.model.FrogjumpApiMessagesCreateGroupRequest;
@@ -49,12 +51,8 @@ public class LoginActivity extends AppCompatActivity {
 
         lblStatus = (TextView) findViewById(R.id.lblStatus);
         txtGroupId = (EditText) findViewById(R.id.txtGroupId);
-        sensitize(false);
 
-        int last_group = sharedPreferences.getInt(ApplicationPreferences.GROUP_ID, 0);
-        if (last_group != 0) {
-            txtGroupId.setText(String.format("%1$09d", last_group));
-        }
+        sensitize(false);
 
         txtGroupId.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -66,8 +64,11 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
-        lblStatus.setText("Connecting to Frogjump API...");
         apiService = getApiServiceHandle(null);
+
+        setupUI();
+
+        lblStatus.setText("Connecting to Frogjump API...");
 
         String gcm_token = sharedPreferences.getString(ApplicationPreferences.GCM_TOKEN, null);
         if (gcm_token != null) {
@@ -88,7 +89,7 @@ public class LoginActivity extends AppCompatActivity {
             }).execute(partGroupRequest);
         }
 
-        lblStatus.setText("Acquiring token from Cloud Messaging...");
+        lblStatus.setText("Connecting to Cloud Messaging...  If this takes more than a few seconds, rotate your device to try again.");
 
         mRegistrationBroadcastReceiver = new BroadcastReceiver() {
             @Override
@@ -111,6 +112,25 @@ public class LoginActivity extends AppCompatActivity {
         }
 
     }
+
+    private void setupUI() {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+        int last_group = sharedPreferences.getInt(ApplicationPreferences.GROUP_ID, 0);
+        if (last_group != 0) {
+            txtGroupId.setText(String.format("%1$09d", last_group));
+        }
+
+        lblStatus.setText("");
+
+    }
+
+    @Override
+    public void onRestart() {
+        setupUI();
+        super.onRestart();
+    }
+
 
     public static Frogjump getApiServiceHandle(@Nullable GoogleAccountCredential credential) {
       // Use a builder to help formulate the API request.
@@ -218,9 +238,22 @@ public class LoginActivity extends AppCompatActivity {
                 }
 
                 // Use the response
-                lblStatus.setText("Success = " + res.getSuccess());
+                if (res.getSuccess()) {
+                    lblStatus.setText("Group join request sent. Waiting to be added to group...");
+                } else {
+                    lblStatus.setText("Group join failed. Maybe the Group ID is wrong or expired?");
+                }
             }
         }).execute(req);
+    }
+
+    public void onBtnAboutClick(View view) {
+        startActivity(new Intent(this, AboutActivity.class));
+    }
+
+    public void onBtnWebsiteClick(View view) {
+        Uri u = Uri.parse("https://micolous.github.io/frogjump/");
+        startActivity(new Intent(Intent.ACTION_VIEW, u));
     }
 
     public void onBtnCreateGroupClick(View view) {
@@ -261,8 +294,13 @@ public class LoginActivity extends AppCompatActivity {
                 }
 
                 // Use the response
-                lblStatus.setText("Success = " + res.getSuccess());
+                if (res.getSuccess()) {
+                    lblStatus.setText("Group created. Waiting to be added to group...");
+                } else {
+                    lblStatus.setText("Group creation failed.");
+                }
             }
         }).execute(req);
     }
+
 }

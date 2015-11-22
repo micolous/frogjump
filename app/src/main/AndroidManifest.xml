@@ -53,14 +53,23 @@
 
         <activity
             android:name=".GeoActivity"
-            android:label="@string/title_activity_geo"
-            android:exported="true">
+            android:exported="true"
+            android:label="@string/title_activity_geo" >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
+
                 <data android:scheme="geo" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
-
+        </activity>
+        <activity
+            android:name=".AboutActivity"
+            android:label="@string/title_activity_about"
+            android:parentActivityName=".LoginActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="au.id.micolous.frogjump.LoginActivity" />
         </activity>
     </application>
 

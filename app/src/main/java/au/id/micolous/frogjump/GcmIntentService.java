@@ -14,7 +14,8 @@ import com.google.android.gms.gcm.GcmListenerService;
  */
 public class GcmIntentService extends GcmListenerService {
     public static final String TAG = "GcmIntentService";
-    private static final String GOOGLE_MAPS = "com.google.android.apps.maps";
+    public static final String GOOGLE_MAPS = "com.google.android.apps.maps";
+    public static final String GPS_STATUS = "com.eclipsim.gpsstatus2";
 
 
     @Override
@@ -61,21 +62,33 @@ public class GcmIntentService extends GcmListenerService {
                         latE6 / 1000000, Math.abs(latE6 % 1000000),
                         lngE6 / 1000000, Math.abs(lngE6 % 1000000));
 
-                geoloc = "google.navigation:q=" + geoloc;
-                switch (navigationMode) {
-                    case DRIVING:
-                        geoloc += "&mode=d";
-                        break;
-                    case CYCLING:
-                        geoloc += "&mode=b";
-                        break;
-                    case WALKING:
-                        geoloc += "&mode=w";
-                        break;
-                }
+                if (navigationMode == MainActivity.NavigationMode.CROW_FLIES) {
+                    geoloc = "geo:" + geoloc;
+                    Uri geouri = Uri.parse(geoloc);
+                    Intent intent = new Intent(Intent.ACTION_VIEW, geouri);
+                    intent.setPackage(GPS_STATUS);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
 
-                if (navigationMode != MainActivity.NavigationMode.OFF) {
-                    // Launch the intent
+                } else if (navigationMode != MainActivity.NavigationMode.OFF) {
+                    geoloc = "google.navigation:q=" + geoloc;
+                    switch (navigationMode) {
+                        // https://developers.google.com/maps/documentation/directions/intro#Restrictions
+                        // The intent service supports this parameter too, but it is not documented.
+                        case DRIVING_AVOID_TOLLS:
+                            geoloc += "&avoid=tolls";
+                        case DRIVING:
+                            geoloc += "&mode=d";
+                            break;
+                        case CYCLING:
+                            geoloc += "&mode=b";
+                            break;
+                        case WALKING:
+                            geoloc += "&mode=w";
+                            break;
+                    }
+
+                    // Launch Google Maps
                     Uri geouri = Uri.parse(geoloc);
                     Intent intent = new Intent(Intent.ACTION_VIEW, geouri);
                     intent.setPackage(GOOGLE_MAPS);

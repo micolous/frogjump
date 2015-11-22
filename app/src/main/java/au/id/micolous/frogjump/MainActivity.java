@@ -1,6 +1,8 @@
 package au.id.micolous.frogjump;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -36,8 +38,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public enum NavigationMode {
         OFF (0),
         DRIVING (1),
-        CYCLING (2),
-        WALKING (3);
+        DRIVING_AVOID_TOLLS (2),
+        CYCLING (3),
+        WALKING (4),
+        CROW_FLIES (5);
 
         private final int id;
         NavigationMode(int id) {
@@ -96,13 +100,47 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         return group_id_s;
     }
 
+    /**
+     * Prompts to install a package if it is not installed.
+     * @param packageName Package name to check for.
+     * @return True if the package was already installed, False otherwise.
+     */
+    private boolean promptForInstall(String packageName) {
+        Intent intent = getPackageManager().getLaunchIntentForPackage(packageName);
+        if (intent == null) {
+            startActivity(new Intent(Intent.ACTION_VIEW,
+                    Uri.parse("market://details?id=" + packageName)));
+            return false;
+        }
+        return true;
+    }
+
     public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
         navigationMode = NavigationMode.getById(pos);
+        // Check that the package is installed
+        if (navigationMode != NavigationMode.OFF) {
+            if (navigationMode == NavigationMode.CROW_FLIES) {
+                // Check for GPS Status and Toolbox
+                if (!promptForInstall(GcmIntentService.GPS_STATUS)) {
+                    navigationMode = NavigationMode.OFF;
+                }
+            } else {
+                // Check for Google Maps
+                if (!promptForInstall(GcmIntentService.GOOGLE_MAPS)) {
+                    navigationMode = NavigationMode.OFF;
+                }
+            }
+
+            if (navigationMode == NavigationMode.OFF) {
+                // It has been turned off due to no package installed
+                spnNavigationMode.setSelection(navigationMode.getId());
+            }
+        }
+
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         sharedPreferences.edit()
                 .putInt(ApplicationPreferences.NAVIGATION_MODE, navigationMode.getId())
                 .apply();
-
 
         Log.i(TAG, "NavigationMode = " + navigationMode);
     }
@@ -144,9 +182,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.part:
+            case android.R.id.home:
                 partGroup();
                 finish();
-                break;
+                return true;
         }
         return false;
     }

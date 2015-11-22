@@ -1,5 +1,6 @@
 package au.id.micolous.frogjump;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -8,6 +9,7 @@ import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.appspot.frogjump_cloud.frogjump.Frogjump;
 import com.appspot.frogjump_cloud.frogjump.model.FrogjumpApiMessagesCreateGroupRequest;
@@ -39,6 +41,7 @@ public class GeoActivity extends AppCompatActivity {
         if (gcm_token == null || group_key == null) {
             // drop out, we can't continue.
             Log.i(TAG, "Cannot find group_key, gcm_token, or otherwise not registered");
+            showToast(R.string.broadcast_login_req);
             finish();
             return;
         }
@@ -94,6 +97,7 @@ public class GeoActivity extends AppCompatActivity {
                     if (!llMatcher.find()) {
                         // Type 4, we can't handle
                         Log.i(TAG, "Cannot handle Type 4 (geocoder required) geo URIs");
+                        showToast(R.string.broadcast_not_supported);
                         return false;
                     }
 
@@ -120,6 +124,7 @@ public class GeoActivity extends AppCompatActivity {
                 if (!llMatcher.find()) {
                     // Something weird happened...
                     Log.i(TAG, "Error handling type 1/2 location " + q);
+                    showToast(R.string.broadcast_not_supported);
                     return false;
                 }
 
@@ -139,6 +144,7 @@ public class GeoActivity extends AppCompatActivity {
 
 
         // We don't support non-geo links yet.
+        showToast(R.string.broadcast_not_supported);
         return false;
     }
 
@@ -186,12 +192,12 @@ public class GeoActivity extends AppCompatActivity {
             protected void onPostExecute(FrogjumpApiMessagesGroupResponse res) {
                 if (res == null) {
                     // Error happened
-                    // TODO: Implement toast
                     Log.i(TAG, "Error sending message");
+                    showToast(R.string.broadcast_fail);
                 } else {
                     // All ok
-                    // TODO: Implement toast
                     Log.i(TAG, "Send message!");
+                    showToast(R.string.broadcast_success);
                 }
 
                 finish();
@@ -199,5 +205,11 @@ public class GeoActivity extends AppCompatActivity {
         }).execute(req);
     }
 
-    private void allDone() {}
+    private void showToast(int resId) {
+        String message = getString(resId);
+        Context context = getApplicationContext();
+        Toast toast = Toast.makeText(context, message, Toast.LENGTH_LONG);
+        toast.show();
+    }
+
 }

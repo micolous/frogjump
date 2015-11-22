@@ -3,13 +3,23 @@
     android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin" tools:context=".MainActivity">
+    android:paddingBottom="@dimen/activity_vertical_margin" tools:context=".LoginActivity">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="@string/login_hero"
+        android:id="@+id/textView2"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true" />
 
     <EditText
+        android:layout_below="@+id/textView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:inputType="number"
-        android:ems="10"
+        android:ems="7"
         android:id="@+id/txtGroupId"
         android:hint="@string/join_group_id"
         android:layout_centerHorizontal="true"
@@ -17,20 +27,56 @@
         android:singleLine="true"
         android:imeOptions="actionGo"/>
 
-    <Button
+    <LinearLayout
+        android:orientation="horizontal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/start_new_group"
-        android:id="@+id/btnCreateGroup"
-        android:layout_centerHorizontal="true"
-        android:onClick="onBtnCreateGroupClick"
-        android:layout_below="@+id/txtGroupId" />
+        android:layout_below="@+id/txtGroupId"
+        android:layout_centerHorizontal="true">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="@string/login_new_c2a"
+            android:id="@+id/lblLoginNewC2A" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/start_new_group"
+            android:id="@+id/btnCreateGroup"
+            android:onClick="onBtnCreateGroupClick" />
+    </LinearLayout>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/lblStatus"
-        android:layout_alignParentBottom="true"
+        android:layout_above="@+id/llbottom"
         android:layout_centerHorizontal="true" />
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/llbottom"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="About"
+            android:id="@+id/btnAbout"
+            android:onClick="onBtnAboutClick" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Website"
+            android:id="@+id/btnWebsite"
+            android:onClick="onBtnWebsiteClick" />
+    </LinearLayout>
 
 </RelativeLayout>
