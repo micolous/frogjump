@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">Frogjump</string>
+    <string name="title_activity_main">Frogjump Commands</string>
+
+    <string-array name="navigation_modes">
+        <item>Auto-pilot off</item>
+        <item>Driving</item>
+        <item>Cycling</item>
+        <item>Walking</item>
+    </string-array>
+    <string name="title_activity_geo">Frogjump Geo Handler</string>
+    <string name="broadcasting">Broadcasting...</string>
+    <string name="leave_group">Leave group</string>
+    <string name="join_group_id">Join Group ID</string>
+    <string name="start_new_group">Start a new group</string>
+</resources>

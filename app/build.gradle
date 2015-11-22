@@ -1,0 +1,66 @@
+apply plugin: 'com.android.application'
+apply plugin: 'com.google.gms.google-services'
+
+repositories {
+    maven {
+        url 'https://google-api-client-libraries.appspot.com/mavenrepo'
+    }
+    mavenCentral()
+    mavenLocal()
+}
+
+android {
+    signingConfigs {
+        debug {
+            keyAlias 'androiddebugkey'
+            storeFile file('/home/michael/.android/debug.keystore')
+        }
+        release {
+            keyAlias 'michael'
+            storeFile file('/home/michael/.android/release.keys')
+        }
+    }
+    compileSdkVersion 23
+    buildToolsVersion "23.0.2"
+    defaultConfig {
+        applicationId "au.id.micolous.frogjump"
+        minSdkVersion 15
+        targetSdkVersion 23
+        versionCode 1
+        versionName "1.0"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+        }
+        debug {
+            signingConfig signingConfigs.debug
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile 'com.android.support:appcompat-v7:23.1.1'
+    // Google Play Services
+    compile 'com.google.android.gms:play-services-gcm:8.3.0'
+    // Google API client library
+    compile('com.google.api-client:google-api-client:1.18.0-rc') {
+        // Exclude artifacts that the Android SDK/Runtime provides.
+        exclude(group: 'xpp3', module: 'xpp3')
+        exclude(group: 'org.apache.httpcomponents', module: 'httpclient')
+        exclude(group: 'junit', module: 'junit')
+        exclude(group: 'com.google.android', module: 'android')
+    }
+    compile('com.google.api-client:google-api-client-android:1.21.0') {
+        // Exclude play services, since we're not using this yet.
+        exclude(group: 'com.google.android.gms:play-services', module: 'google-play-services')
+    }
+    // Android extensions for Google HTTP Client.
+    compile('com.google.http-client:google-http-client-android:1.21.0') {
+        exclude(group: 'com.google.android', module: 'android')
+    }
+    // compile 'com.appspot.frogjump_cloud:frogjump:v1-1.21.0-SNAPSHOT'
+}
