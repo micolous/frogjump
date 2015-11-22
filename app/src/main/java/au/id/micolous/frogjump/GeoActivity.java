@@ -17,6 +17,7 @@ import com.appspot.frogjump_cloud.frogjump.model.FrogjumpApiMessagesGroupRespons
 import com.appspot.frogjump_cloud.frogjump.model.FrogjumpApiMessagesPostMessageRequest;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -47,6 +48,7 @@ public class GeoActivity extends AppCompatActivity {
         }
 
         resolveIntent(getIntent());
+        finish();
     }
 
     @Override
@@ -140,6 +142,61 @@ public class GeoActivity extends AppCompatActivity {
             dispatchLatLng(lat, lng);
 
             return true;
+        } else if (geoLocation.getHost().contains("google.")) {
+            // Google Maps
+            double lat = 0, lng = 0;
+            boolean hasLL = false;
+
+            if (geoLocation.getPath().startsWith("/maps/")) {
+                // New style maps URL
+                // www.google.com/maps/
+                List<String> bits = geoLocation.getPathSegments();
+                for (String bit : bits) {
+                   if (bit.startsWith("@")) {
+                       // Geolocation component
+                       String[] loc_tokens = bit.substring(1).split(",");
+                       lat = Double.valueOf(loc_tokens[0]);
+                       lng = Double.valueOf(loc_tokens[1]);
+                       hasLL = true;
+                   }
+                }
+            } else {
+                // Old style maps URL
+                // maps.google.com/maps; maps.google.com/
+
+                String q = geoLocation.getQueryParameter("q");
+                if (q != null) {
+                    Matcher llMatcher = LL_PATTERN.matcher(q);
+                    if (llMatcher.find()) {
+                        lat = Double.valueOf(llMatcher.group(1));
+                        lng = Double.valueOf(llMatcher.group(2));
+                        hasLL = true;
+                    }
+                }
+
+                if (!hasLL) {
+                    q = geoLocation.getQueryParameter("ll");
+                    if (q != null) {
+                        Matcher llMatcher = LL_PATTERN.matcher(q);
+                        if (llMatcher.find()) {
+                            lat = Double.valueOf(llMatcher.group(1));
+                            lng = Double.valueOf(llMatcher.group(2));
+                            hasLL = true;
+                        }
+                    }
+                }
+
+            }
+
+            if (hasLL) {
+                dispatchLatLng(lat, lng);
+                return true;
+            } else {
+                Log.i(TAG, "Error handling gmaps URL " + geoLocation.toString());
+                showToast(R.string.broadcast_not_supported);
+                return false;
+            }
+
         }
 
 
@@ -199,8 +256,6 @@ public class GeoActivity extends AppCompatActivity {
                     Log.i(TAG, "Send message!");
                     showToast(R.string.broadcast_success);
                 }
-
-                finish();
             }
         }).execute(req);
     }
