@@ -1,0 +1,5 @@
+cron:
+- description: Cleanup old groups
+  url: /cron/cleanup
+  schedule: every 1 hours
+

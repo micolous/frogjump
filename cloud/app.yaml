@@ -1,0 +1,39 @@
+application: frogjump-cloud
+runtime: python27
+threadsafe: true
+api_version: 1
+
+handlers:
+- url: /
+  static_files: templates/index.html
+  upload: templates/index\.html
+  secure: always
+
+- url: /cron/.*
+  script: cron.app
+  secure: always
+  login: admin
+
+# Endpoints handler
+- url: /_ah/spi/.*
+  script: frogjump_api.APPLICATION
+  secure: always
+
+libraries:
+- name: pycrypto
+  version: latest
+- name: endpoints
+  version: latest
+
+includes:
+- secrets.yaml
+
+skip_files:
+- ^generate_api\.sh$
+- ^frogjump-.*\.zip$
+- ^(.*/)?#.*#$
+- ^(.*/)?.*~$
+- ^(.*/)?.*\.py[co]$
+- ^(.*/)?.*/RCS/.*$
+- ^(.*/)?\..*$
+
