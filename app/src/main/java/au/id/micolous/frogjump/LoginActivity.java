@@ -78,7 +78,7 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
-        apiService = getApiServiceHandle(null);
+        apiService = Util.getApiServiceHandle(null);
 
         setupUI();
 
@@ -144,19 +144,6 @@ public class LoginActivity extends AppCompatActivity {
         setupUI();
         super.onRestart();
     }
-
-
-    public static Frogjump getApiServiceHandle(@Nullable GoogleAccountCredential credential) {
-      // Use a builder to help formulate the API request.
-      Frogjump.Builder frogjump = new Frogjump.Builder(AndroidHttp.newCompatibleTransport(),
-          new AndroidJsonFactory(), credential);
-
-      // DEBUG
-      //frogjump.setRootUrl("http://172.20.0.238:8080/_ah/api");
-
-      return frogjump.build();
-    }
-
 
     /**
      * Enables or disables all UI elements.

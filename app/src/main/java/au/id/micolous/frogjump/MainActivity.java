@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        apiService = LoginActivity.getApiServiceHandle(null);
+        apiService = Util.getApiServiceHandle(null);
 
         group_id = sharedPreferences.getInt(ApplicationPreferences.GROUP_ID, 0);
         group_key = sharedPreferences.getString(ApplicationPreferences.GROUP_KEY, null);

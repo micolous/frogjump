@@ -238,7 +238,7 @@ public class GeoActivity extends AppCompatActivity {
     private void dispatchLatLng(long latE6, long lngE6) {
         Log.i(TAG, "Dispatching " + latE6 + "," + lngE6);
 
-        final Frogjump apiService = LoginActivity.getApiServiceHandle(null);
+        final Frogjump apiService = Util.getApiServiceHandle(null);
 
         // Lets make a callback to the web service
         FrogjumpApiMessagesPostMessageRequest req = new FrogjumpApiMessagesPostMessageRequest();
