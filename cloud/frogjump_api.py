@@ -7,12 +7,12 @@ from models import Group
 from gcm import GcmApi
 from os import environ
 
-CLIENT_ID = environ['CLIENT_ID']
+CLIENT_IDS = [environ['DEBUG_CLIENT_ID'], environ['RELEASE_CLIENT_ID'], endpoints.API_EXPLORER_CLIENT_ID]
 GCM_API_KEY = environ['GCM_API_KEY']
 
 @endpoints.api(name='frogjump', version='v1',
 	description='Frogjump backend service API',
-	allowed_client_ids = [CLIENT_ID, endpoints.API_EXPLORER_CLIENT_ID])
+	allowed_client_ids = CLIENT_IDS)
 class FrogjumpApi(remote.Service):
 
 	@endpoints.method(CreateGroupRequest, GroupResponse,
