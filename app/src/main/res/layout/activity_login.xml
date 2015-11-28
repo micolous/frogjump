@@ -14,24 +14,39 @@
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true" />
 
-    <EditText
-        android:layout_below="@+id/textView2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:inputType="number"
-        android:ems="7"
-        android:id="@+id/txtGroupId"
-        android:hint="@string/join_group_id"
-        android:layout_centerHorizontal="true"
-        android:maxLength="9"
-        android:singleLine="true"
-        android:imeOptions="actionGo"/>
-
     <LinearLayout
+        android:id="@+id/llJoin"
         android:orientation="horizontal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/txtGroupId"
+        android:layout_below="@+id/textView2"
+        android:layout_centerHorizontal="true">
+
+        <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:ems="7"
+            android:id="@+id/txtGroupId"
+            android:hint="@string/join_group_id"
+            android:maxLength="9"
+            android:singleLine="true"
+            android:imeOptions="actionGo"/>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/join_group"
+            android:id="@+id/btnJoinGroup"
+            android:onClick="onBtnJoinGroupClick" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/llCreate"
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/llJoin"
         android:layout_centerHorizontal="true">
 
         <TextView

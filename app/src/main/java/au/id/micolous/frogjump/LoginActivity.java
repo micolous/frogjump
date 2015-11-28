@@ -196,6 +196,7 @@ public class LoginActivity extends AppCompatActivity {
     private void sensitize(boolean status) {
         findViewById(R.id.txtGroupId).setEnabled(status);
         findViewById(R.id.btnCreateGroup).setEnabled(status);
+        findViewById(R.id.btnJoinGroup).setEnabled(status);
     }
 
     @Override
