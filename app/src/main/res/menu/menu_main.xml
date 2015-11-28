@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
- <item android:id="@+id/part"
-     android:title="@string/leave_group" />
+ <item android:id="@+id/share" android:title="@string/share_group" />
+ <item android:id="@+id/qr" android:title="@string/qr_code" />
+ <item android:id="@+id/part" android:title="@string/leave_group" />
 
 </menu>

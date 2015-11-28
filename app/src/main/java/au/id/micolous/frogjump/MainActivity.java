@@ -33,6 +33,7 @@ import android.widget.TextView;
 
 import com.appspot.frogjump_cloud.frogjump.Frogjump;
 import com.appspot.frogjump_cloud.frogjump.model.FrogjumpApiMessagesPartGroupRequest;
+import com.google.zxing.integration.android.IntentIntegrator;
 
 import java.io.IOException;
 
@@ -191,12 +192,27 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        String group_url = "http://frjmp.xyz/g/" + group_id;
+
         switch (item.getItemId()) {
             case R.id.part:
             case android.R.id.home:
                 partGroup();
                 finish();
                 return true;
+
+            case R.id.qr:
+                IntentIntegrator qrIntent = new IntentIntegrator(this);
+                qrIntent.shareText(group_url);
+                return true;
+
+            case R.id.share:
+                Intent intent = new Intent(Intent.ACTION_SEND);
+                intent.setType("text/plain");
+                intent.putExtra(Intent.EXTRA_TEXT, group_url);
+                startActivity(Intent.createChooser(intent, "Share URL"));
+                break;
+
         }
         return false;
     }
