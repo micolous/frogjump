@@ -10,9 +10,11 @@ import com.google.api.client.extensions.android.json.AndroidJsonFactory;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 
 /**
- * Created by michael on 24/11/15.
+ * Utility functions for Frogjump
  */
 public class Util {
+    public static final String TAG = "Util";
+
     public static String getVersionString() {
         PackageInfo info = getPackageInfo();
         return String.format("%s (Build %s)", info.versionName, info.versionCode);

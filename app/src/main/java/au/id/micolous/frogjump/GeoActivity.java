@@ -18,6 +18,8 @@ package au.id.micolous.frogjump;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
@@ -29,22 +31,54 @@ import android.widget.Toast;
 import com.appspot.frogjump_cloud.frogjump.Frogjump;
 import com.appspot.frogjump_cloud.frogjump.model.FrogjumpApiMessagesGroupResponse;
 import com.appspot.frogjump_cloud.frogjump.model.FrogjumpApiMessagesPostMessageRequest;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.gcm.Task;
+import com.google.android.gms.location.places.GeoDataApi;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.PlaceBuffer;
+import com.google.android.gms.location.places.Places;
+import com.google.api.client.auth.oauth2.Credential;
+import com.google.api.client.extensions.android.http.AndroidHttp;
+import com.google.api.client.extensions.android.json.AndroidJsonFactory;
+import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
+import com.google.api.services.urlshortener.Urlshortener;
+import com.google.api.services.urlshortener.UrlshortenerRequest;
+import com.google.api.services.urlshortener.UrlshortenerScopes;
+import com.google.api.services.urlshortener.model.Url;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class GeoActivity extends AppCompatActivity {
+public class GeoActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
+    protected static final Pattern URL_PATTERN = Pattern.compile("(https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{2,256}\\.[a-z]{2,6}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*))");
+    protected String mUrlShortenerClientId;
 
     public static final String TAG = "GeoActivity";
     private String gcm_token;
     private String group_key;
+    private GoogleApiClient mGoogleApiClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_geo);
+
+        try {
+            ApplicationInfo ai = getPackageManager().getApplicationInfo(getPackageName(), PackageManager.GET_META_DATA);
+            mUrlShortenerClientId = ai.metaData.getString("com.google.android.geo.API_KEY");
+        } catch (PackageManager.NameNotFoundException e) {} // do nothing, shouldn't happen
+
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addApi(Places.GEO_DATA_API)
+                .addOnConnectionFailedListener(this)
+                .build();
 
         // Start by seeing if we have a group key available.
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
@@ -70,9 +104,35 @@ public class GeoActivity extends AppCompatActivity {
     }
 
     private boolean resolveIntent(Intent intent) {
-        // Lets try to get the latE6 and lngE6 we need
-        final Uri geoLocation = intent.getData();
 
+        if (intent.getAction().equals(Intent.ACTION_VIEW)) {
+            // Lets try to get the latE6 and lngE6 we need
+            final Uri geoLocation = intent.getData();
+            return resolveUrl(geoLocation);
+
+        } else if (intent.getAction().equals(Intent.ACTION_SEND)) {
+            // Text links
+            String message = intent.getStringExtra(Intent.EXTRA_TEXT);
+
+            // First, try to find a URL in the message.
+            Matcher m = URL_PATTERN.matcher(message);
+            if (m.find()) {
+                // We have something to try to work with.
+                // Grab out the URL and try to parse.
+                Uri uri = Uri.parse(m.group(1));
+
+                // Throw it at the url handler
+                return resolveUrl(uri);
+            }
+        }
+
+
+        // We don't support non-geo links yet.
+        showToast(R.string.broadcast_not_supported);
+        return false;
+    }
+
+    private boolean resolveUrl (Uri geoLocation) {
         if (geoLocation.getScheme().equals("geo")) {
             // There are a few ways to do this, according to
             // https://developer.android.com/guide/components/intents-common.html#Maps
@@ -145,6 +205,16 @@ public class GeoActivity extends AppCompatActivity {
             dispatchLatLng(ll);
 
             return true;
+        } else if (geoLocation.getHost().equalsIgnoreCase("goo.gl")) {
+            // goo.gl URL shortener, needed for google maps.
+            if (!expandGooglAndRedispatch(geoLocation)) {
+                // Something is really bad
+                showToast(R.string.broadcast_not_supported);
+                return false;
+            }
+
+            // We probably succeeded in setting up for a second round
+            return true;
         } else if (geoLocation.getHost().contains("google.")) {
             // Google Maps
             LatLng ll = null;
@@ -154,11 +224,11 @@ public class GeoActivity extends AppCompatActivity {
                 // www.google.com/maps/
                 List<String> bits = geoLocation.getPathSegments();
                 for (String bit : bits) {
-                   if (bit.startsWith("@")) {
-                       // Geolocation component
-                       String[] loc_tokens = bit.substring(1).split(",");
-                       ll = LatLng.parseFromStringArray(loc_tokens);
-                   }
+                    if (bit.startsWith("@")) {
+                        // Geolocation component
+                        String[] loc_tokens = bit.substring(1).split(",");
+                        ll = LatLng.parseFromStringArray(loc_tokens);
+                    }
                 }
             } else {
                 // Old style maps URL
@@ -183,6 +253,29 @@ public class GeoActivity extends AppCompatActivity {
                         ll = LatLng.parseFromString(q);
                     }
                 }
+
+                if (ll == null) {
+                    // Google Places API
+                    // http://maps.google.com/?cid=123123123123
+                    q = geoLocation.getQueryParameter("cid");
+                    if (q != null) {
+                        // Lets look this up
+                        PendingResult<PlaceBuffer> placeResult = Places.GeoDataApi.getPlaceById(mGoogleApiClient, q);
+                        placeResult.setResultCallback(new ResultCallback<PlaceBuffer>() {
+                            @Override
+                            public void onResult(PlaceBuffer places) {
+                                if (!places.getStatus().isSuccess() || places.getCount() < 1) {
+                                    Log.i(TAG, "Failed to get a successful position of place");
+                                    showToast(R.string.api_client_fail);
+                                } else {
+                                    final Place place = places.get(0);
+                                    dispatchLatLng(place.getLatLng());
+                                }
+                            }
+
+                        });
+                    }
+                }
             }
 
             if (ll != null) {
@@ -193,17 +286,18 @@ public class GeoActivity extends AppCompatActivity {
                 showToast(R.string.broadcast_not_supported);
                 return false;
             }
-
         }
 
-
-        // We don't support non-geo links yet.
         showToast(R.string.broadcast_not_supported);
         return false;
     }
 
     private void dispatchLatLng(LatLng latLng) {
         dispatchLatLng(latLng.getLatitude(), latLng.getLongitude());
+    }
+
+    private void dispatchLatLng(com.google.android.gms.maps.model.LatLng latLng) {
+        dispatchLatLng(latLng.latitude, latLng.longitude);
     }
 
     /**
@@ -260,6 +354,73 @@ public class GeoActivity extends AppCompatActivity {
         }).execute(req);
     }
 
+    /**
+     * Expands goo.gl links and rethrows the GeoActivity asynchronously.
+     * @param input Input goo.gl URL
+     * @return false if the task has definitely failed, true if it might have succeeded.
+     */
+    private boolean expandGooglAndRedispatch(Uri input) {
+        final GeoActivity this_activity = this;
+        if (!input.getHost().equalsIgnoreCase("goo.gl")) {
+            return false;
+        }
+
+        // Lets do some expanding, yes.
+
+        GoogleAccountCredential credential = GoogleAccountCredential.usingAudience(this,
+                "server:client_id:" + mGoogleApiClient);
+
+        Urlshortener.Builder builder = new Urlshortener.Builder(AndroidHttp.newCompatibleTransport(),
+                new AndroidJsonFactory(), credential);
+        Urlshortener urlshortener = builder.build();
+
+
+        Urlshortener.Url.Get request;
+        try {
+            request = urlshortener.url().get(input.toString());
+        } catch (IOException ex) {
+            Log.d(TAG, "Caught IOException in urlshortener", ex);
+            return false;
+        }
+
+        (new AsyncTask<Urlshortener.Url.Get, Void, Url>() {
+            @Override
+            protected Url doInBackground(Urlshortener.Url.Get... gets) {
+                Url res = null;
+
+                try {
+                    res = gets[0].execute();
+                } catch (IOException ex) {
+                    Log.d(TAG, ex.getMessage(), ex);
+                }
+                return res;
+            }
+
+            protected void onPostExecute(Url res) {
+                if (res == null) {
+                    // Error happened
+                    Log.i(TAG, "Failed to look up url on shortener");
+                } else {
+                    // Looks ok, lets start processing
+
+                    if (!res.getStatus().equals("OK")) {
+                        // Maybe malware? Or rate limited?  Drop out now.
+                        Log.i(TAG, "urlshortener said this url was status=" + res.getStatus());
+                    }
+
+                    Uri u = Uri.parse(res.getLongUrl());
+
+                    // Lets rethrow this, because we are async!
+                    Intent i = new Intent(this_activity, GeoActivity.class);
+                    i.setData(u);
+                    startActivity(i);
+                }
+            }
+        }).execute(request);
+
+        return true;
+    }
+
     private void showToast(int resId) {
         String message = getString(resId);
         Context context = getApplicationContext();
@@ -267,4 +428,9 @@ public class GeoActivity extends AppCompatActivity {
         toast.show();
     }
 
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+        Log.e(TAG, "onConnectionFailed, error code = " + connectionResult.getErrorCode());
+        showToast(R.string.api_client_fail);
+    }
 }

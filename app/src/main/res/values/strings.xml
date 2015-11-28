@@ -20,6 +20,9 @@
     <string name="broadcast_fail">Failed to broadcast location.</string>
     <string name="broadcast_login_req">You are not logged in properly, so can\'t broadcast right now. Please launch Frogjump and join a group.</string>
     <string name="broadcast_not_supported">This type of link is not supported by Frogjump.</string>
+
+    <string name="api_client_fail">Cannot connect to Google API client.</string>
+
     <string name="login_new_c2a">Don\'t have a group?</string>
     <string name="login_hero">Back-seat driving, for the rest of us.</string>
     <string name="title_activity_about">About Frogjump</string>

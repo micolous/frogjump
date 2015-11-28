@@ -80,5 +80,8 @@ dependencies {
     compile('com.google.http-client:google-http-client-android:1.21.0') {
         exclude(group: 'com.google.android', module: 'android')
     }
+
+    compile 'com.google.apis:google-api-services-urlshortener:v1-rev41-1.21.0'
+    compile 'com.google.android.gms:play-services-location:8.3.0'
     // compile 'com.appspot.frogjump_cloud:frogjump:v1-1.21.0-SNAPSHOT'
 }
