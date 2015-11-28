@@ -38,7 +38,6 @@ import java.util.regex.Pattern;
 public class GeoActivity extends AppCompatActivity {
 
     public static final String TAG = "GeoActivity";
-    protected static final Pattern LL_PATTERN = Pattern.compile("([+-]?\\d+(?:\\.\\d+)?),([+-]?\\d+(?:\\.\\d+)?)");
     private String gcm_token;
     private String group_key;
 
@@ -89,9 +88,7 @@ public class GeoActivity extends AppCompatActivity {
             // We will also drop the "label" parameter, because it isn't important.
             String geoString = geoLocation.getSchemeSpecificPart();
             Log.i(TAG, "Geo = " + geoString);
-            double lat = 0, lng = 0;
-            boolean hasLL = false;
-
+            LatLng ll = null;
 
             // Check to see if we have q= set (type 3/4), and that it's after "?"
             int queryindex = geoString.indexOf('?');
@@ -109,22 +106,20 @@ public class GeoActivity extends AppCompatActivity {
                         q = geoString.substring(qoff, andoff);
                     }
 
-                    Matcher llMatcher = LL_PATTERN.matcher(q);
-                    if (!llMatcher.find()) {
+                    // Handle Type 3
+                    ll = LatLng.parseFromString(q);
+
+                    if (ll == null) {
                         // Type 4, we can't handle
                         Log.i(TAG, "Cannot handle Type 4 (geocoder required) geo URIs");
                         showToast(R.string.broadcast_not_supported);
                         return false;
                     }
 
-                    // Type 3
-                    lat = Double.valueOf(llMatcher.group(1));
-                    lng = Double.valueOf(llMatcher.group(2));
-                    hasLL = true;
                 }
             }
 
-            if (!hasLL) {
+            if (ll == null) {
                 // Type 1 / 2
                 String q;
                 if (queryindex >= 0) {
@@ -136,30 +131,23 @@ public class GeoActivity extends AppCompatActivity {
                 }
 
                 // Now parse
-                Matcher llMatcher = LL_PATTERN.matcher(q);
-                if (!llMatcher.find()) {
+                ll = LatLng.parseFromString(q);
+
+                if (ll == null) {
                     // Something weird happened...
                     Log.i(TAG, "Error handling type 1/2 location " + q);
                     showToast(R.string.broadcast_not_supported);
                     return false;
                 }
-
-                lat = Double.valueOf(llMatcher.group(1));
-                lng = Double.valueOf(llMatcher.group(2));
-                hasLL = true;
             }
 
-            // We should have a lat long by now.
-            assert hasLL;
-
             // Lets do some handling, yay!
-            dispatchLatLng(lat, lng);
+            dispatchLatLng(ll);
 
             return true;
         } else if (geoLocation.getHost().contains("google.")) {
             // Google Maps
-            double lat = 0, lng = 0;
-            boolean hasLL = false;
+            LatLng ll = null;
 
             if (geoLocation.getPath().startsWith("/maps/")) {
                 // New style maps URL
@@ -169,9 +157,7 @@ public class GeoActivity extends AppCompatActivity {
                    if (bit.startsWith("@")) {
                        // Geolocation component
                        String[] loc_tokens = bit.substring(1).split(",");
-                       lat = Double.valueOf(loc_tokens[0]);
-                       lng = Double.valueOf(loc_tokens[1]);
-                       hasLL = true;
+                       ll = LatLng.parseFromStringArray(loc_tokens);
                    }
                 }
             } else {
@@ -180,30 +166,27 @@ public class GeoActivity extends AppCompatActivity {
 
                 String q = geoLocation.getQueryParameter("q");
                 if (q != null) {
-                    Matcher llMatcher = LL_PATTERN.matcher(q);
-                    if (llMatcher.find()) {
-                        lat = Double.valueOf(llMatcher.group(1));
-                        lng = Double.valueOf(llMatcher.group(2));
-                        hasLL = true;
-                    }
+                    ll = LatLng.parseFromString(q);
                 }
 
-                if (!hasLL) {
+                if (ll == null) {
                     q = geoLocation.getQueryParameter("ll");
                     if (q != null) {
-                        Matcher llMatcher = LL_PATTERN.matcher(q);
-                        if (llMatcher.find()) {
-                            lat = Double.valueOf(llMatcher.group(1));
-                            lng = Double.valueOf(llMatcher.group(2));
-                            hasLL = true;
-                        }
+                        ll = LatLng.parseFromString(q);
                     }
                 }
 
+                if (ll == null) {
+                    // Used for Telegram's navigation function
+                    q = geoLocation.getQueryParameter("daddr");
+                    if (q != null) {
+                        ll = LatLng.parseFromString(q);
+                    }
+                }
             }
 
-            if (hasLL) {
-                dispatchLatLng(lat, lng);
+            if (ll != null) {
+                dispatchLatLng(ll);
                 return true;
             } else {
                 Log.i(TAG, "Error handling gmaps URL " + geoLocation.toString());
@@ -219,6 +202,9 @@ public class GeoActivity extends AppCompatActivity {
         return false;
     }
 
+    private void dispatchLatLng(LatLng latLng) {
+        dispatchLatLng(latLng.getLatitude(), latLng.getLongitude());
+    }
 
     /**
      * Dispatches a request with a known decimal latitude and longitude.
