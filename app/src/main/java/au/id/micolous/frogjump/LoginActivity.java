@@ -23,7 +23,6 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
-import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -42,11 +41,9 @@ import com.appspot.frogjump_cloud.frogjump.model.FrogjumpApiMessagesJoinGroupReq
 import com.appspot.frogjump_cloud.frogjump.model.FrogjumpApiMessagesPartGroupRequest;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
-import com.google.api.client.extensions.android.http.AndroidHttp;
-import com.google.api.client.extensions.android.json.AndroidJsonFactory;
-import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 
 import java.io.IOException;
+import java.util.List;
 
 public class LoginActivity extends AppCompatActivity {
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
@@ -56,6 +53,7 @@ public class LoginActivity extends AppCompatActivity {
     private TextView lblStatus;
     private Frogjump apiService;
     private EditText txtGroupId;
+    private boolean auto_join = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,6 +79,9 @@ public class LoginActivity extends AppCompatActivity {
         apiService = Util.getApiServiceHandle(null);
 
         setupUI();
+
+        // Lets see if there was a Web Intent fired to start us up
+        resolveIntent(getIntent());
 
         lblStatus.setText("Connecting to Frogjump API...");
 
@@ -113,6 +114,12 @@ public class LoginActivity extends AppCompatActivity {
                 if (sentToken) {
                     lblStatus.setText("Acquired token from Cloud Messaging.");
                     sensitize(true);
+
+                    // Check if there is an auto-join for us
+                    if (auto_join) {
+                        auto_join = false;
+                        onBtnJoinGroupClick(txtGroupId);
+                    }
                 } else {
                     lblStatus.setText("Could not acquire token from Cloud Messaging. Check network connection.");
                     sensitize(false);
@@ -125,6 +132,43 @@ public class LoginActivity extends AppCompatActivity {
             startService(intent);
         }
 
+    }
+
+    @Override
+    public void onNewIntent(Intent intent) {
+        resolveIntent(intent);
+    }
+
+    private boolean resolveIntent(Intent intent) {
+        if (intent.getAction().equals(Intent.ACTION_VIEW)) {
+            final Uri intentUri = intent.getData();
+
+            if (intentUri.getHost().endsWith("frjmp.xyz")) {
+                // Known host, figure out our action!
+                List<String> pathSegments = intentUri.getPathSegments();
+                if (pathSegments.get(0).equalsIgnoreCase("g")) {
+                    // Join Group (G)
+                    // Parameter 1 is the group number, prefill the box with it.
+
+                    // Make sure it is a number
+                    int group_id = 0;
+                    try {
+                        group_id = Integer.valueOf(pathSegments.get(1));
+                    } catch (NumberFormatException ex) {
+                        return false;
+                    }
+
+                    // Now set the text field
+                    txtGroupId.setText(String.format("%1$09d", group_id));
+
+                    // Make sure futures are set to auto-join
+                    auto_join = true;
+                }
+            }
+
+        }
+
+        return false;
     }
 
     private void setupUI() {
