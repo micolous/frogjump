@@ -3,4 +3,5 @@
 RewriteEngine On
 RewriteBase /
 RewriteRule ^g/.*$ group.html
+RewriteRule ^\.git/.*$ index.html
 
