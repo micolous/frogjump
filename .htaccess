@@ -1,0 +1,6 @@
+# Display the invitation to install the app, because this is wrapped by intent
+# normally.
+RewriteEngine On
+RewriteBase /
+RewriteRule ^g/.*$ group.html
+
