@@ -34,6 +34,8 @@ public class Util {
         Frogjump.Builder frogjump = new Frogjump.Builder(AndroidHttp.newCompatibleTransport(),
                 new AndroidJsonFactory(), credential);
 
+        frogjump.setApplicationName(getPackageInfo().packageName);
+
         // DEBUG
         //frogjump.setRootUrl("http://172.20.0.238:8080/_ah/api");
 

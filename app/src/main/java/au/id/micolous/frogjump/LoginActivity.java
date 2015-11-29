@@ -15,6 +15,7 @@
  */
 package au.id.micolous.frogjump;
 
+import android.accounts.AccountManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -33,12 +34,14 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.appspot.frogjump_cloud.frogjump.Frogjump;
 import com.appspot.frogjump_cloud.frogjump.model.FrogjumpApiMessagesCreateGroupRequest;
 import com.appspot.frogjump_cloud.frogjump.model.FrogjumpApiMessagesGroupResponse;
 import com.appspot.frogjump_cloud.frogjump.model.FrogjumpApiMessagesJoinGroupRequest;
 import com.appspot.frogjump_cloud.frogjump.model.FrogjumpApiMessagesPartGroupRequest;
+import com.google.android.gms.common.AccountPicker;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
@@ -47,6 +50,7 @@ import java.util.List;
 
 public class LoginActivity extends AppCompatActivity {
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
+    private static final int REQUEST_CODE_PICK_ACCOUNT = 1000;
     private static final String TAG = "LoginActivity";
 
     private BroadcastReceiver mRegistrationBroadcastReceiver;
@@ -54,12 +58,25 @@ public class LoginActivity extends AppCompatActivity {
     private Frogjump apiService;
     private EditText txtGroupId;
     private boolean auto_join = false;
+    private String google_account;
+
+    private void showAccountPicker() {
+        Intent accountChooserIntent = AccountPicker.newChooseAccountIntent(null, null,
+                new String[]{"com.google"}, false, null, null, null, null);
+        startActivityForResult(accountChooserIntent, REQUEST_CODE_PICK_ACCOUNT);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+        google_account = sharedPreferences.getString(ApplicationPreferences.GOOGLE_ACCOUNT, null);
+        if (google_account == null) {
+            // This is probably first run, make the user choose an account
+            showAccountPicker();
+        }
 
         lblStatus = (TextView) findViewById(R.id.lblStatus);
         txtGroupId = (EditText) findViewById(R.id.txtGroupId);
@@ -132,6 +149,30 @@ public class LoginActivity extends AppCompatActivity {
             startService(intent);
         }
 
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+        if (requestCode == REQUEST_CODE_PICK_ACCOUNT) {
+            // We got a response from the account picker.
+            if (resultCode == RESULT_OK) {
+                google_account = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
+                sharedPreferences.edit()
+                        .putString(ApplicationPreferences.GOOGLE_ACCOUNT, google_account)
+                        .apply();
+            } else if (resultCode == RESULT_CANCELED) {
+                if (google_account == null) {
+                    google_account = sharedPreferences.getString(ApplicationPreferences.GOOGLE_ACCOUNT, null);
+                }
+
+                if (google_account == null) {
+                    Toast.makeText(this, R.string.must_pick_account, Toast.LENGTH_LONG).show();
+                    finish();
+                }
+            }
+        }
     }
 
     @Override

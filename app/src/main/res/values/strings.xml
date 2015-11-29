@@ -38,5 +38,6 @@ You should have received a copy of the GNU General Public License along with thi
     <string name="qr_code">Create QR code</string>
     <string name="share_group">Share group</string>
     <string name="join_group">Join group</string>
+    <string name="must_pick_account">You must pick an account to use with Google Services. None of your private information is used.</string>
 
 </resources>
