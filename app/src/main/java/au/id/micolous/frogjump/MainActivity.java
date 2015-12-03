@@ -217,4 +217,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         return false;
     }
 
+    public void onShareMarkerClick(View view) {
+        // We don't handle this ourselves, direct to our website to handle this bit.
+        Uri u = Uri.parse("https://micolous.github.io/frogjump/map");
+        startActivity(new Intent(Intent.ACTION_VIEW, u));
+    }
+
 }
