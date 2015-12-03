@@ -3,6 +3,9 @@ import json
 
 GCM_API_URL = 'https://gcm-http.googleapis.com/gcm/send'
 
+class GcmException(Exception): pass
+
+
 class GcmApi(object):
 	def __init__(self, api_key):
 		self._api_key = api_key
@@ -32,9 +35,11 @@ class GcmApi(object):
 		}
 
 		result = urlfetch.fetch(url=GCM_API_URL, payload=o, method=urlfetch.POST, headers=headers)
-		assert result.status_code == 200, 'non-200 response code :('
+		if result.status_code != 200:
+			raise GcmException, ('Non-200 response code (%d)' % (result.status_code))
 
 		response = json.loads(result.content)
 		#print 'gcm response = %r' % (response,)
-		assert response['success'] > 0, 'no successful notifications'
+		if response['success'] == 0:
+			raise GcmException, 'No successful notifications sent'
 

@@ -4,7 +4,7 @@ import endpoints
 from protorpc import remote
 from frogjump_api_messages import *
 from models import Group
-from gcm import GcmApi
+from gcm import GcmApi, GcmException
 from os import environ
 
 CLIENT_IDS = [environ['DEBUG_CLIENT_ID'], environ['RELEASE_CLIENT_ID'], endpoints.API_EXPLORER_CLIENT_ID]
@@ -21,7 +21,11 @@ class FrogjumpApi(remote.Service):
 	def group_create(self, request):
 		# We should now validate the token given
 		gcm = GcmApi(GCM_API_KEY)
-		gcm.send(request.gcm_token, dict(a='Ping'))
+		try:
+			gcm.send(request.gcm_token, dict(a='Ping'))
+		except GcmException:
+			# Probably an invalid token, bail
+			return GroupResponse(success=False)
 
 		Group.remove_by_gcm_token(request.gcm_token)
 
@@ -41,7 +45,11 @@ class FrogjumpApi(remote.Service):
 	def group_join(self, request):
 		# We should now validate the token given
 		gcm = GcmApi(GCM_API_KEY)
-		gcm.send(request.gcm_token, dict(a='Ping'))
+		try:
+			gcm.send(request.gcm_token, dict(a='Ping'))
+		except GcmException:
+			# Probably an invalid token, bail
+			return GroupResponse(success=False)
 
 		Group.remove_by_gcm_token(request.gcm_token)
 		group = Group.add_to_group(request.gcm_token, request.group_id)
@@ -58,11 +66,9 @@ class FrogjumpApi(remote.Service):
 		path='group/part', http_method='POST',
 		name='group.part')
 	def group_part(self, request):
-		# We should now validate the token given
-		gcm = GcmApi(GCM_API_KEY)
-		gcm.send(request.gcm_token, dict(a='Ping'))
-
+		# Don't worry about validating the token.
 		Group.remove_by_gcm_token(request.gcm_token)
+
 		return GroupResponse(success=True)
 
 	@endpoints.method(PostMessageRequest, GroupResponse,
