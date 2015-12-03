@@ -25,5 +25,5 @@ public class ApplicationPreferences {
     public static final String NAVIGATION_MODE = "navigationMode";
     public static final String GROUP_ID = "groupId";
     public static final String GROUP_KEY = "groupKey";
-    public static final String GOOGLE_ACCOUNT = "googleAccount";
+    //public static final String GOOGLE_ACCOUNT = "googleAccount";
 }

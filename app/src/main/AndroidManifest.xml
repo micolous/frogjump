@@ -108,11 +108,15 @@
             </intent-filter>
 
             <!-- Text intents. These are used by Google Maps for Android's "share link" -->
+            <!-- These aren't really useful at the moment, because the Share links can't be expanded
+            with published APIs.
+
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
                 <data android:mimeType="text/plain" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+            -->
         </activity>
 
         <activity
@@ -123,10 +127,5 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="au.id.micolous.frogjump.LoginActivity" />
         </activity>
-
-        <!-- Locked to debug.keys and release.keys -->
-        <meta-data android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyBScJotRwsEF_2njYMfKeTKP6kgq_RKupQ" />
-
     </application>
 </manifest>

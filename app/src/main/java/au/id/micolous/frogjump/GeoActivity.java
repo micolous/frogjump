@@ -18,8 +18,6 @@ package au.id.micolous.frogjump;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
@@ -31,19 +29,23 @@ import android.widget.Toast;
 import com.appspot.frogjump_cloud.frogjump.Frogjump;
 import com.appspot.frogjump_cloud.frogjump.model.FrogjumpApiMessagesGroupResponse;
 import com.appspot.frogjump_cloud.frogjump.model.FrogjumpApiMessagesPostMessageRequest;
+
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+/*
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.PlaceBuffer;
 import com.google.android.gms.location.places.Places;
+
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.extensions.android.json.AndroidJsonFactory;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.util.ExponentialBackOff;
 import com.google.api.services.urlshortener.Urlshortener;
 import com.google.api.services.urlshortener.model.Url;
+*/
 
 import java.io.IOException;
 import java.util.List;
@@ -52,27 +54,29 @@ import java.util.regex.Pattern;
 
 public class GeoActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
     protected static final Pattern URL_PATTERN = Pattern.compile("(https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{2,256}\\.[a-z]{2,6}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*))");
-    protected String mUrlShortenerClientId;
+    //protected String mUrlShortenerClientId;
 
     public static final String TAG = "GeoActivity";
     private String gcm_token;
     private String group_key;
-    private GoogleApiClient mGoogleApiClient;
-    private String google_account;
+    //private GoogleApiClient mGoogleApiClient;
+    //private String google_account;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_geo);
 
+        /*
         try {
             ApplicationInfo ai = getPackageManager().getApplicationInfo(getPackageName(), PackageManager.GET_META_DATA);
             mUrlShortenerClientId = ai.metaData.getString("com.google.android.geo.API_KEY");
         } catch (PackageManager.NameNotFoundException e) {} // do nothing, shouldn't happen
+        */
 
         // Start by seeing if we have a group key available.
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        google_account = sharedPreferences.getString(ApplicationPreferences.GOOGLE_ACCOUNT, null);
+        //google_account = sharedPreferences.getString(ApplicationPreferences.GOOGLE_ACCOUNT, null);
 
         gcm_token = sharedPreferences.getString(ApplicationPreferences.GCM_TOKEN, null);
         group_key = sharedPreferences.getString(ApplicationPreferences.GROUP_KEY, null);
@@ -85,10 +89,12 @@ public class GeoActivity extends AppCompatActivity implements GoogleApiClient.On
             return;
         }
 
+        /*
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this, 0, this)
                 .addApi(Places.GEO_DATA_API)
                 .build();
+        */
 
         resolveIntent(getIntent());
         finish();
@@ -201,6 +207,7 @@ public class GeoActivity extends AppCompatActivity implements GoogleApiClient.On
             dispatchLatLng(ll);
 
             return true;
+            /*
         } else if (geoLocation.getHost().equalsIgnoreCase("goo.gl")) {
             // goo.gl URL shortener, needed for google maps.
             if (!expandGooglAndRedispatch(geoLocation)) {
@@ -211,6 +218,7 @@ public class GeoActivity extends AppCompatActivity implements GoogleApiClient.On
 
             // We probably succeeded in setting up for a second round
             return true;
+            */
         } else if (geoLocation.getHost().contains("google.")) {
             // Google Maps
             LatLng ll = null;
@@ -251,6 +259,8 @@ public class GeoActivity extends AppCompatActivity implements GoogleApiClient.On
                     }
                 }
 
+                // Places API can't handle cid= parameters. :(
+                /*
                 if (ll == null) {
                     // Google Places API, used when Google Maps has a pin which matches something
                     // with a Page.
@@ -282,6 +292,7 @@ public class GeoActivity extends AppCompatActivity implements GoogleApiClient.On
                         return true;
                     }
                 }
+                */
             }
 
             if (ll != null) {
@@ -302,9 +313,11 @@ public class GeoActivity extends AppCompatActivity implements GoogleApiClient.On
         dispatchLatLng(latLng.getLatitude(), latLng.getLongitude());
     }
 
+    /*
     private void dispatchLatLng(com.google.android.gms.maps.model.LatLng latLng) {
         dispatchLatLng(latLng.latitude, latLng.longitude);
     }
+    */
 
     /**
      * Dispatches a request with a known decimal latitude and longitude.
@@ -360,21 +373,16 @@ public class GeoActivity extends AppCompatActivity implements GoogleApiClient.On
         }).execute(req);
     }
 
-    /**
+    /*
      * Expands goo.gl links and rethrows the GeoActivity asynchronously.
      * @param input Input goo.gl URL
      * @return false if the task has definitely failed, true if it might have succeeded.
-     */
+     *
     private boolean expandGooglAndRedispatch(Uri input) {
         final GeoActivity this_activity = this;
         if (!input.getHost().equalsIgnoreCase("goo.gl")) {
             return false;
         }
-
-        // Lets do some expanding, yes.
-        //GoogleCredential credential = new GoogleCredential()
-        //        .setAccessToken(mUrlShortenerClientId);
-
         GoogleAccountCredential credential = GoogleAccountCredential.usingAudience(
                 getApplicationContext(), "server:client_id:" + mUrlShortenerClientId)
                 .setBackOff(new ExponentialBackOff())
@@ -431,6 +439,7 @@ public class GeoActivity extends AppCompatActivity implements GoogleApiClient.On
 
         return true;
     }
+    */
 
     private void showToast(int resId) {
         String message = getString(resId);

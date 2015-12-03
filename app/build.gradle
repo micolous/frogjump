@@ -42,7 +42,7 @@ android {
     buildToolsVersion "23.0.2"
     defaultConfig {
         applicationId "au.id.micolous.frogjump"
-        minSdkVersion 15
+        minSdkVersion 16
         targetSdkVersion 23
         versionCode getVersionCode()
         versionName getVersionName()
@@ -81,7 +81,6 @@ dependencies {
         exclude(group: 'com.google.android', module: 'android')
     }
 
-    compile 'com.google.apis:google-api-services-urlshortener:v1-rev41-1.21.0'
-    compile 'com.google.android.gms:play-services-location:8.3.0'
-    // compile 'com.appspot.frogjump_cloud:frogjump:v1-1.21.0-SNAPSHOT'
+    //compile 'com.google.apis:google-api-services-urlshortener:v1-rev41-1.21.0'
+    //compile 'com.google.android.gms:play-services-location:8.3.0'
 }
