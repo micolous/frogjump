@@ -58,6 +58,10 @@ function onLocationFound(e) {
 			.addTo(map)
 			.on('click', onMarkerClick);
 		cclHere = L.circle(e.latlng, radius).addTo(map);
+
+		// This is the first time, stop panning after this.
+		map.stopLocate();
+		map.locate({maxZoom: 16, watch: true});
 	} else {
 		mkrHere.setLatLng(e.latlng).update();
 		cclHere.setLatLng(e.latlng).setRadius(radius).update();
@@ -82,5 +86,5 @@ map.on('locationfound', onLocationFound);
 map.on('locationerror', onLocationError);
 map.on('click', onClick);
 
-map.locate({setView: true, maxZoom: 16, watch: true});
+map.locate({setView: true, maxZoom: 16});
 
