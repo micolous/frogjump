@@ -7,8 +7,13 @@ from models import Group
 from gcm import GcmApi, GcmException
 from os import environ
 
-CLIENT_IDS = [environ['DEBUG_CLIENT_ID'], environ['RELEASE_CLIENT_ID'], endpoints.API_EXPLORER_CLIENT_ID]
-GCM_API_KEY = environ['GCM_API_KEY']
+if 'GCM_API_KEY' in environ:
+	CLIENT_IDS = [environ['DEBUG_CLIENT_ID'], environ['RELEASE_CLIENT_ID'], endpoints.API_EXPLORER_CLIENT_ID]
+	GCM_API_KEY = environ['GCM_API_KEY']
+else:
+    # For endpoints generator.
+	CLIENT_IDS = []
+	GCM_API_KEY = None
 
 @endpoints.api(name='frogjump', version='v1',
 	description='Frogjump backend service API',
@@ -90,6 +95,14 @@ class FrogjumpApi(remote.Service):
 		gcm.send(group.members, dict(a='Goto', y=request.latE6, x=request.lngE6))
 
 		return GroupResponse(success=True)
+
+	@endpoints.method(ProductVersionRequest, ProductVersionResponse,
+		path='version', http_method='POST',
+		name='version')
+	def version(self, request):
+		if request.version_code >= 3:
+			return ProductVersionResponse(new_version=False)
+		return ProductVersionResponse(new_version=True)
 
 APPLICATION = endpoints.api_server([FrogjumpApi], restricted=False)
 

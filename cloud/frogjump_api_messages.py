@@ -19,3 +19,8 @@ class PostMessageRequest(messages.Message):
 	latE6 = messages.IntegerField(3, required=True)
 	lngE6 = messages.IntegerField(4, required=True)
 
+class ProductVersionRequest(messages.Message):
+	version_code = messages.IntegerField(1, required=True)
+
+class ProductVersionResponse(messages.Message):
+	new_version = messages.BooleanField(1, required=True)
