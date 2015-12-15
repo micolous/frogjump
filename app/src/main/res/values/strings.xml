@@ -27,7 +27,6 @@
     <string name="login_hero">Back-seat driving, for the rest of us.</string>
     <string name="title_activity_about">About Frogjump</string>
 
-    <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
     <string name="gplv3_boilerplate">This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 <br/><br/>
@@ -38,6 +37,10 @@ You should have received a copy of the GNU General Public License along with thi
     <string name="qr_code">Create QR code</string>
     <string name="share_group">Share group</string>
     <string name="join_group">Join group</string>
-    <string name="must_pick_account">You must pick an account to use with Google Services. None of your private information is used.</string>
+    <!-- <string name="must_pick_account">You must pick an account to use with Google Services. None of your private information is used.</string> -->
 
+    <string name="update_available_title">Update available</string>
+    <string name="update_available_message">A new version of Frogjump is available. The old version may not function correctly without this update.</string>
+    <string name="update_positive">Update now</string>
+    <string name="update_negative">Later</string>
 </resources>

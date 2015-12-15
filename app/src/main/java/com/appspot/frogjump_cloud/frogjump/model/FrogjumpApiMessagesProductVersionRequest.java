@@ -19,7 +19,7 @@
 package com.appspot.frogjump_cloud.frogjump.model;
 
 /**
- * Model definition for FrogjumpApiMessagesJoinGroupRequest.
+ * Model definition for FrogjumpApiMessagesProductVersionRequest.
  *
  * <p> This is the Java data model class that specifies how to parse/serialize into the JSON that is
  * transmitted over HTTP when working with the frogjump. For a detailed explanation see:
@@ -29,58 +29,37 @@ package com.appspot.frogjump_cloud.frogjump.model;
  * @author Google, Inc.
  */
 @SuppressWarnings("javadoc")
-public final class FrogjumpApiMessagesJoinGroupRequest extends com.google.api.client.json.GenericJson {
+public final class FrogjumpApiMessagesProductVersionRequest extends com.google.api.client.json.GenericJson {
 
   /**
    * The value may be {@code null}.
    */
-  @com.google.api.client.util.Key("gcm_token")
-  private java.lang.String gcmToken;
-
-  /**
-   * The value may be {@code null}.
-   */
-  @com.google.api.client.util.Key("group_id")
-  private java.lang.String groupId;
+  @com.google.api.client.util.Key("version_code") @com.google.api.client.json.JsonString
+  private java.lang.Long versionCode;
 
   /**
    * @return value or {@code null} for none
    */
-  public java.lang.String getGcmToken() {
-    return gcmToken;
+  public java.lang.Long getVersionCode() {
+    return versionCode;
   }
 
   /**
-   * @param gcmToken gcmToken or {@code null} for none
+   * @param versionCode versionCode or {@code null} for none
    */
-  public FrogjumpApiMessagesJoinGroupRequest setGcmToken(java.lang.String gcmToken) {
-    this.gcmToken = gcmToken;
-    return this;
-  }
-
-  /**
-   * @return value or {@code null} for none
-   */
-  public java.lang.String getGroupId() {
-    return groupId;
-  }
-
-  /**
-   * @param groupId groupId or {@code null} for none
-   */
-  public FrogjumpApiMessagesJoinGroupRequest setGroupId(java.lang.String groupId) {
-    this.groupId = groupId;
+  public FrogjumpApiMessagesProductVersionRequest setVersionCode(java.lang.Long versionCode) {
+    this.versionCode = versionCode;
     return this;
   }
 
   @Override
-  public FrogjumpApiMessagesJoinGroupRequest set(String fieldName, Object value) {
-    return (FrogjumpApiMessagesJoinGroupRequest) super.set(fieldName, value);
+  public FrogjumpApiMessagesProductVersionRequest set(String fieldName, Object value) {
+    return (FrogjumpApiMessagesProductVersionRequest) super.set(fieldName, value);
   }
 
   @Override
-  public FrogjumpApiMessagesJoinGroupRequest clone() {
-    return (FrogjumpApiMessagesJoinGroupRequest) super.clone();
+  public FrogjumpApiMessagesProductVersionRequest clone() {
+    return (FrogjumpApiMessagesProductVersionRequest) super.clone();
   }
 
 }

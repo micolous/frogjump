@@ -39,6 +39,8 @@ import com.appspot.frogjump_cloud.frogjump.model.FrogjumpApiMessagesCreateGroupR
 import com.appspot.frogjump_cloud.frogjump.model.FrogjumpApiMessagesGroupResponse;
 import com.appspot.frogjump_cloud.frogjump.model.FrogjumpApiMessagesJoinGroupRequest;
 import com.appspot.frogjump_cloud.frogjump.model.FrogjumpApiMessagesPartGroupRequest;
+import com.appspot.frogjump_cloud.frogjump.model.FrogjumpApiMessagesProductVersionRequest;
+import com.appspot.frogjump_cloud.frogjump.model.FrogjumpApiMessagesProductVersionResponse;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
@@ -102,6 +104,8 @@ public class LoginActivity extends AppCompatActivity {
         resolveIntent(getIntent());
 
         lblStatus.setText("Connecting to Frogjump API...");
+
+        Util.updateCheck(apiService);
 
         String gcm_token = sharedPreferences.getString(ApplicationPreferences.GCM_TOKEN, null);
         if (gcm_token != null) {
@@ -280,8 +284,15 @@ public class LoginActivity extends AppCompatActivity {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         // Validate the group ID first
-        int group_id = Integer.parseInt(txtGroupId.getText().toString());
-        if (group_id > 999999999 || group_id < 0) {
+        int group_id;
+        try {
+            group_id = Integer.parseInt(txtGroupId.getText().toString());
+        } catch (NumberFormatException) {
+            Log.i(TAG, "group_id is not a number");
+            return;
+        }
+
+        if (group_id > 999999999 || group_id <= 0) {
             // fail
             Log.i(TAG, "group_id is invalid");
             return;
