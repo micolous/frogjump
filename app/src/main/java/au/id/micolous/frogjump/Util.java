@@ -24,23 +24,27 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.appspot.frogjump_cloud.frogjump.Frogjump;
 import com.appspot.frogjump_cloud.frogjump.model.FrogjumpApiMessagesProductVersionRequest;
 import com.appspot.frogjump_cloud.frogjump.model.FrogjumpApiMessagesProductVersionResponse;
+import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.extensions.android.json.AndroidJsonFactory;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 
 import java.io.IOException;
+import java.util.Random;
 
 /**
  * Utility functions for Frogjump
  */
 public class Util {
     public static final String TAG = "Util";
+    private static final Random rng = new Random();
 
     public static int getVersionCode() {
         //return 1;
@@ -126,5 +130,26 @@ public class Util {
             }
         }).execute(productVersionRequest);
 
+    }
+
+
+    public static void sendGcmMessage(final Bundle message) {
+        final long message_id = rng.nextLong();
+        FrogjumpApplication app = FrogjumpApplication.getInstance();
+        final GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(app);
+
+        final String gcm_to = app.getString(R.string.gcm_defaultSenderId) + "@gcm.googleapis.com";
+        (new AsyncTask<Void, Void, Boolean>() {
+            @Override
+            protected Boolean doInBackground(Void... params) {
+                try {
+                    gcm.send(gcm_to, Long.toString(message_id), message);
+                    return true;
+                } catch (IOException ex) {
+                    Log.e(TAG, "sendGcmMessage fail", ex);
+                    return false;
+                }
+            }
+        }).execute();
     }
 }

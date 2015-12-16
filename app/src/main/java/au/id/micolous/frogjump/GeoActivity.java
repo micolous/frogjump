@@ -58,6 +58,7 @@ public class GeoActivity extends AppCompatActivity implements GoogleApiClient.On
 
     public static final String TAG = "GeoActivity";
     private String gcm_token;
+    private int group_id;
     private String group_key;
     //private GoogleApiClient mGoogleApiClient;
     //private String google_account;
@@ -79,6 +80,7 @@ public class GeoActivity extends AppCompatActivity implements GoogleApiClient.On
         //google_account = sharedPreferences.getString(ApplicationPreferences.GOOGLE_ACCOUNT, null);
 
         gcm_token = sharedPreferences.getString(ApplicationPreferences.GCM_TOKEN, null);
+        group_id = sharedPreferences.getInt(ApplicationPreferences.GROUP_ID, 0);
         group_key = sharedPreferences.getString(ApplicationPreferences.GROUP_KEY, null);
 
         if (gcm_token == null || group_key == null) {
@@ -338,6 +340,20 @@ public class GeoActivity extends AppCompatActivity implements GoogleApiClient.On
         Log.i(TAG, "Dispatching " + latE6 + "," + lngE6);
 
         final Frogjump apiService = Util.getApiServiceHandle(null);
+
+        Bundle msg = new Bundle();
+        // Action
+        msg.putString("a", "Send");
+        // client Version
+        msg.putString("v", Integer.toString(Util.getVersionCode()));
+        // Group id
+        msg.putString("g", Integer.toString(group_id));
+        // Y (latitude)
+        msg.putString("y", Long.toString(latE6));
+        // X (longitude)
+        msg.putString("x", Long.toString(lngE6));
+
+        Util.sendGcmMessage(msg);
 
         // Lets make a callback to the web service
         FrogjumpApiMessagesPostMessageRequest req = new FrogjumpApiMessagesPostMessageRequest();
