@@ -287,7 +287,7 @@ public class LoginActivity extends AppCompatActivity {
         int group_id;
         try {
             group_id = Integer.parseInt(txtGroupId.getText().toString());
-        } catch (NumberFormatException) {
+        } catch (NumberFormatException ex) {
             Log.i(TAG, "group_id is not a number");
             return;
         }

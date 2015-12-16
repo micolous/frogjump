@@ -64,7 +64,7 @@ public class Util {
         return frogjump.build();
     }
 
-    public static void updateCheck(Frogjump apiService) {
+    public static void updateCheck(final Frogjump apiService) {
         final FrogjumpApplication app = FrogjumpApplication.getInstance();
         FrogjumpApiMessagesProductVersionRequest productVersionRequest = new FrogjumpApiMessagesProductVersionRequest();
         productVersionRequest.setVersionCode((long) Util.getVersionCode());
