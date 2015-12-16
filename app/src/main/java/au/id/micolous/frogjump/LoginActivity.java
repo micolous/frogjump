@@ -105,7 +105,7 @@ public class LoginActivity extends AppCompatActivity {
 
         lblStatus.setText("Connecting to Frogjump API...");
 
-        Util.updateCheck(apiService);
+        Util.updateCheck(apiService, this);
 
         String gcm_token = sharedPreferences.getString(ApplicationPreferences.GCM_TOKEN, null);
         if (gcm_token != null) {

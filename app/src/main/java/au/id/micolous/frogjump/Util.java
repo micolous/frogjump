@@ -1,5 +1,6 @@
 package au.id.micolous.frogjump;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
@@ -27,6 +28,7 @@ public class Util {
     public static final String TAG = "Util";
 
     public static int getVersionCode() {
+        //return 1;
         PackageInfo info = getPackageInfo();
         return info.versionCode;
     }
@@ -64,8 +66,7 @@ public class Util {
         return frogjump.build();
     }
 
-    public static void updateCheck(final Frogjump apiService) {
-        final FrogjumpApplication app = FrogjumpApplication.getInstance();
+    public static void updateCheck(final Frogjump apiService, final Activity activity) {
         FrogjumpApiMessagesProductVersionRequest productVersionRequest = new FrogjumpApiMessagesProductVersionRequest();
         productVersionRequest.setVersionCode((long) Util.getVersionCode());
         (new AsyncTask<FrogjumpApiMessagesProductVersionRequest, Void, FrogjumpApiMessagesProductVersionResponse>() {
@@ -86,14 +87,14 @@ public class Util {
                     // We have a response, lets see if we need to prompt an update
                     if (productVersionResponse.getNewVersion()) {
                         // We have a new version available.  Prompt.
-                        AlertDialog.Builder updateDialog = new AlertDialog.Builder(app);
+                        AlertDialog.Builder updateDialog = new AlertDialog.Builder(activity);
                         updateDialog.setTitle(R.string.update_available_title);
                         updateDialog.setMessage(R.string.update_available_message);
                         updateDialog.setPositiveButton(R.string.update_positive, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
                                 try {
-                                    app.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + getPackageName())));
+                                    activity.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + getPackageName())));
                                 } catch (ActivityNotFoundException anfe) {
                                     // Hmm, market is not installed
                                     Log.w(TAG, "Google Play is not installed; cannot install update");
