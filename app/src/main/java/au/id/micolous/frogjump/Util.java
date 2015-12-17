@@ -18,6 +18,7 @@ package au.id.micolous.frogjump;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
@@ -27,6 +28,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.appspot.frogjump_cloud.frogjump.Frogjump;
 import com.appspot.frogjump_cloud.frogjump.model.FrogjumpApiMessagesProductVersionRequest;
@@ -132,9 +134,22 @@ public class Util {
 
     }
 
+    public static void sendGcmMessage(String action) {
+        sendGcmMessage(action, null);
+    }
 
-    public static void sendGcmMessage(final Bundle message) {
+    public static void sendGcmMessage(String action, @Nullable Bundle message_p) {
         final long message_id = rng.nextLong();
+        final Bundle message;
+        if (message_p == null) {
+            message = new Bundle();
+        } else {
+            message = new Bundle(message_p);
+        }
+
+        message.putString("a", action);
+        message.putString("v", Integer.toString(getVersionCode()));
+
         FrogjumpApplication app = FrogjumpApplication.getInstance();
         final GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(app);
 
@@ -151,5 +166,11 @@ public class Util {
                 }
             }
         }).execute();
+    }
+
+    public static void showToast(Context context, int resId) {
+        String message = context.getString(resId);
+        Toast toast = Toast.makeText(context, message, Toast.LENGTH_LONG);
+        toast.show();
     }
 }

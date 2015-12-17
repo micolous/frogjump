@@ -9,9 +9,18 @@ The advantage of this is it helps ties messages more strongly between clients' G
 ## Configuration parameters
 
 ```ini
-[frogjump2]
+[gcm]
+; Use the production GCM service?
 prod = yes
+
+; Sender ID to use, excluding the domain segment.
 sender_id = 1234567890
+
+; Secret key to use
 key = ABCDEFABCDEF
+
+[db]
+; Database path
+path = frogjump2.db3
 ```
 

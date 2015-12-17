@@ -43,4 +43,6 @@ You should have received a copy of the GNU General Public License along with thi
     <string name="update_available_message">A new version of Frogjump is available. The old version may not function correctly without this update.</string>
     <string name="update_positive">Update now</string>
     <string name="update_negative">Later</string>
+
+    <string name="cant_join_group">You can\'t join that group. Maybe it doesn\'t exist, or has expired?</string>
 </resources>

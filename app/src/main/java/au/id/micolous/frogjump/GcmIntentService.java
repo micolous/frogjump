@@ -15,6 +15,7 @@
  */
 package au.id.micolous.frogjump;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -35,6 +36,7 @@ public class GcmIntentService extends GcmListenerService {
 
     @Override
     public void onMessageReceived(String sender, Bundle extras) {
+        Context app_context = getApplicationContext();
         if (extras != null && !extras.isEmpty()) {
             //Logger.getLogger("GCM_RECEIVED").log(Level.INFO, extras.toString());
             Log.i(TAG, "Message: " + extras.toString());
@@ -46,69 +48,85 @@ public class GcmIntentService extends GcmListenerService {
 
             SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-            if (action.equals("Join")) {
+            if (action.equalsIgnoreCase("join")) {
                 // We got a login message, we need to switch our views
-                String group_key = extras.getString("k");
-                int group_id = Integer.parseInt(extras.getString("i"));
+                String group_id_s = extras.getString("i");
+                if (group_id_s == null) {
+                    return;
+                }
+                int group_id = Integer.parseInt(group_id_s);
 
-                Log.i(TAG, "Login: " + group_id + ", key = " + group_key);
+                Log.i(TAG, "Login: " + group_id);
 
                 sharedPreferences.edit()
-                        .putString(ApplicationPreferences.GROUP_KEY, group_key)
                         .putInt(ApplicationPreferences.GROUP_ID, group_id)
                         .apply();
 
                 Intent i = new Intent(this, MainActivity.class);
-                //MainActivityIntentParams params = new MainActivityIntentParams(group_id, group_key);
-                //i.putExtra(MainActivity.INTENT_PARAMS, params);
                 i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(i);
-            } else if (action.equals("Goto")) {
+            } else if (action.equalsIgnoreCase("nojoin")) {
+                Util.showToast(app_context, R.string.cant_join_group);
+            } else if (action.equalsIgnoreCase("goto")) {
                 // We got an order to change our navigation target
                 MainActivity.NavigationMode navigationMode = MainActivity.NavigationMode.getById(sharedPreferences.getInt(ApplicationPreferences.NAVIGATION_MODE, 0));
 
-                int latE6 = Integer.parseInt(extras.getString("y"));
-                int lngE6 = Integer.parseInt(extras.getString("x"));
+                String latE6_s = extras.getString("y");
+                String lngE6_s = extras.getString("x");
+                if (latE6_s == null || lngE6_s == null) {
+                    return;
+                }
 
-                Log.i(TAG, "Goto: " + navigationMode + " at " + latE6 + "," + lngE6);
+                int latE6 = Integer.parseInt(latE6_s);
+                int lngE6 = Integer.parseInt(lngE6_s);
+                // Check for dry-run
+                boolean dryRun = false;
+                String dryRun_s = extras.getString("d");
+                if (dryRun_s != null) {
+                    dryRun = Integer.parseInt(dryRun_s) >= 1 ;
+                }
+
+                Log.i(TAG, "Goto: " + navigationMode + " at " + latE6 + "," + lngE6 + " (dry_run = " + dryRun + ")");
 
                 // Lets make that a decimal again
                 String geoloc = String.format("%1$d.%2$06d,%3$d.%4$06d",
                         latE6 / 1000000, Math.abs(latE6 % 1000000),
                         lngE6 / 1000000, Math.abs(lngE6 % 1000000));
 
-                if (navigationMode == MainActivity.NavigationMode.CROW_FLIES) {
-                    geoloc = "geo:" + geoloc;
-                    Uri geouri = Uri.parse(geoloc);
-                    Intent intent = new Intent(Intent.ACTION_VIEW, geouri);
-                    intent.setPackage(GPS_STATUS);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(intent);
+                if (!dryRun) {
+                    if (navigationMode == MainActivity.NavigationMode.CROW_FLIES) {
+                        geoloc = "geo:" + geoloc;
+                        Uri geouri = Uri.parse(geoloc);
+                        Intent intent = new Intent(Intent.ACTION_VIEW, geouri);
+                        intent.setPackage(GPS_STATUS);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(intent);
 
-                } else if (navigationMode != MainActivity.NavigationMode.OFF) {
-                    geoloc = "google.navigation:q=" + geoloc;
-                    switch (navigationMode) {
-                        // https://developers.google.com/maps/documentation/directions/intro#Restrictions
-                        // The intent service supports this parameter too, but it is not documented.
-                        case DRIVING_AVOID_TOLLS:
-                            geoloc += "&avoid=tolls";
-                        case DRIVING:
-                            geoloc += "&mode=d";
-                            break;
-                        case CYCLING:
-                            geoloc += "&mode=b";
-                            break;
-                        case WALKING:
-                            geoloc += "&mode=w";
-                            break;
+                    } else if (navigationMode != MainActivity.NavigationMode.OFF) {
+                        geoloc = "google.navigation:q=" + geoloc;
+                        switch (navigationMode) {
+                            // https://developers.google.com/maps/documentation/directions/intro#Restrictions
+                            // The intent service supports this parameter too, but it is not documented.
+                            case DRIVING_AVOID_TOLLS:
+                                geoloc += "&avoid=tolls";
+                            case DRIVING:
+                                geoloc += "&mode=d";
+                                break;
+                            case CYCLING:
+                                geoloc += "&mode=b";
+                                break;
+                            case WALKING:
+                                geoloc += "&mode=w";
+                                break;
+                        }
+
+                        // Launch Google Maps
+                        Uri geouri = Uri.parse(geoloc);
+                        Intent intent = new Intent(Intent.ACTION_VIEW, geouri);
+                        intent.setPackage(GOOGLE_MAPS);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(intent);
                     }
-
-                    // Launch Google Maps
-                    Uri geouri = Uri.parse(geoloc);
-                    Intent intent = new Intent(Intent.ACTION_VIEW, geouri);
-                    intent.setPackage(GOOGLE_MAPS);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(intent);
                 }
             }
 

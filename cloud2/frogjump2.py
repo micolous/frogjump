@@ -1,9 +1,11 @@
-
+#!/usr/bin/env python
 import sys, json
 
 from argparse import ArgumentParser, FileType
 from configparser import ConfigParser
+from models import FrogjumpDB
 from OpenSSL import SSL, crypto
+from random import randint
 from twisted.internet import ssl
 from twisted.internet.defer import Deferred
 from twisted.internet.task import react
@@ -15,10 +17,10 @@ from twisted.words.protocols.jabber.jid import JID
 GCM_PROD = ('gcm-xmpp.googleapis.com', 5235)
 GCM_DEV = ('gcm-preprod.googleapis.com', 5236)
 
-
 class Client(object):
-	def __init__(self, reactor, jid, secret, host, port):
+	def __init__(self, reactor, jid, secret, server, db):
 		self.reactor = reactor
+		self.db = db
 		f = client.XMPPClientFactory(jid, secret)
 		f.addBootstrap(xmlstream.STREAM_CONNECTED_EVENT, self.connected)
 		f.addBootstrap(xmlstream.STREAM_END_EVENT, self.disconnected)
@@ -26,12 +28,10 @@ class Client(object):
 		f.addBootstrap(xmlstream.INIT_FAILED_EVENT, self.init_failed)
 		print 'about to connect'
 		ctx = ssl.ClientContextFactory()
-		
-		reactor.connectSSL(host, port, f, ctx)
-		#connector = SRVConnector(
-		#	reactor, 'xmpp-client', host, f, defaultPort=port, connectFuncName='connectSSL')
-		#connector.connect()
-		print 'finished'
+
+		reactor.connectSSL(server[0], server[1], f, ctx)
+
+
 		self.finished = Deferred()
 
 
@@ -49,30 +49,73 @@ class Client(object):
 		xs.addObserver('/message', self.message)
 		
 		# Log all traffic
-		#xs.rawDataInFn = self.rawDataIn
-		#xs.rawDataOutFn = self.rawDataOut
+		xs.rawDataInFn = self.rawDataIn
+		xs.rawDataOutFn = self.rawDataOut
+
+	def sendMessage(self, to, payload):
+		message_id = str(randint(0, sys.maxint))
+		body = json.dumps(dict(
+			to=to,
+			message_id=message_id,
+			data=payload,
+		))
+		root = domish.Element((None, 'message'))
+		root.addElement('gcm', content=body)['xmlns'] = 'google:mobile:data'
+		self.xmlstream.send(root)
+
 
 	def message(self, msg):
 		msg = json.loads(str(msg.gcm))
 		print msg
+
 		# Lets handle the message
-		
+		if 'from' not in msg or 'data' not in msg or 'v' not in msg['data']:
+			# loopback
+			return
+
 		client_version = msg['data']['v'] = int(msg['data']['v'])
 		if client_version < 5 or client_version > 6:
 			print 'bad client version (%d)' % client_version
 			return
 		
 		action = msg['data']['a'].lower()
-		if action == 'send':
-			self.cmd_send(msg['from'], msg['data'])
-		elif action == 'join':
-			self.cmd_join(msg['from'], msg['data'])
+		if action == 'share':
+			self.cmd_share(msg['from'], msg['data'])
+		elif action == 'knock':
+			self.cmd_knock(msg['from'], msg['data'])
+		elif action == 'create':
+			self.cmd_create(msg['from'])
+		elif action == 'part':
+			self.cmd_part(msg['from'])
+		elif action == 'peek':
+			self.cmd_peek(msg['from'], msg['data'])
 
-	def cmd_join(self, sender, payload):
-		print 'join: %r' % (payload,)
+
+	def cmd_knock(self, sender, payload):
+		print 'knock: %r, %r' % (sender, payload,)
+		self.db.remove_from_group(sender)
+		group_id = int(payload['g'])
+		if self.db.add_to_group(group_id, sender):
+			self.sendMessage(sender, dict(a='Join', i=str(group_id)))
+
+		else:
+			self.sendMessage(sender, dict(a='nojoin', g=str(group_id)))
 	
-	def cmd_send(self, sender, payload):
-		print 'send: %r' % (payload,)
+	def cmd_share(self, sender, payload):
+		print 'share: %r, %r' % (sender, payload,)
+
+	def cmd_create(self, sender):
+		print 'create: %r' % (sender,)
+		self.db.remove_from_group(sender)
+		group_id = self.db.create_group(sender)
+		self.sendMessage(sender, dict(a='Join', i=str(group_id)))
+
+	def cmd_part(self, sender):
+		print 'part: %r' % (sender,)
+		self.db.remove_from_group(sender)
+
+	def cmd_peek(self, sender, payload):
+		print 'peek: %r, %r' % (sender, payload,)
 
 	def disconnected(self, xs):
 		print 'Disconnected.'
@@ -105,12 +148,17 @@ def boot(reactor, config):
 	@param reactor: The reactor to use for the connection.
 	@param config: ConfigParser containing configuration for the application
 	"""
-	jid = config.get('frogjump2', 'sender_id') + '@gcm.googleapis.com'
-	secret = config.get('frogjump2', 'key')
-	server = GCM_PROD if config.getboolean('frogjump2', 'prod') else GCM_DEV
+	jid = config.get('gcm', 'sender_id') + '@gcm.googleapis.com'
+	secret = config.get('gcm', 'key')
+	server = GCM_PROD if config.getboolean('gcm', 'prod') else GCM_DEV
+
+	# Database
+	db_filename = config.get('db', 'path')
+	db = FrogjumpDB(db_filename)
 
 	print 'getting client'
-	return Client(reactor, JID(jid), secret, *server).finished
+	return Client(reactor, JID(jid), secret, server, db).finished
+
 
 def main():
 	parser = ArgumentParser()
@@ -123,7 +171,7 @@ def main():
 	# read the config file
 	config = ConfigParser()
 	config.read_dict({
-		'frogjump2': {
+		'gcm': {
 			'prod': 'false'
 		}
 	})

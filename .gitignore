@@ -10,3 +10,4 @@ google-services.json
 .idea
 *.iml
 *.apk
+*.py[co]

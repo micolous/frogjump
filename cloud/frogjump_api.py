@@ -11,7 +11,7 @@ if 'GCM_API_KEY' in environ:
 	CLIENT_IDS = [environ['DEBUG_CLIENT_ID'], environ['RELEASE_CLIENT_ID'], endpoints.API_EXPLORER_CLIENT_ID]
 	GCM_API_KEY = environ['GCM_API_KEY']
 else:
-    # For endpoints generator.
+	# For endpoints generator.
 	CLIENT_IDS = []
 	GCM_API_KEY = None
 

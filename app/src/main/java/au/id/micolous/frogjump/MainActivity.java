@@ -43,7 +43,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private Spinner spnNavigationMode;
     private NavigationMode navigationMode;
     private int group_id;
-    private String group_key;
     private TextView lblGroupId;
     private Frogjump apiService;
 
@@ -83,9 +82,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         apiService = Util.getApiServiceHandle(null);
 
         group_id = sharedPreferences.getInt(ApplicationPreferences.GROUP_ID, 0);
-        group_key = sharedPreferences.getString(ApplicationPreferences.GROUP_KEY, null);
 
-        if (group_id == 0 || group_key == null) {
+        if (group_id == 0) {
             Log.i(TAG, "Group ID and/or key could not be found in preferences store.");
             finish();
             return;
@@ -162,26 +160,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     public void partGroup() {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-
-        String gcm_token = sharedPreferences.getString(ApplicationPreferences.GCM_TOKEN, null);
-        if (gcm_token != null) {
-            FrogjumpApiMessagesPartGroupRequest partGroupRequest = new FrogjumpApiMessagesPartGroupRequest();
-            partGroupRequest.setGcmToken(gcm_token);
-
-            (new AsyncTask<FrogjumpApiMessagesPartGroupRequest, Void, Void>() {
-
-                @Override
-                protected Void doInBackground(FrogjumpApiMessagesPartGroupRequest... reqs) {
-                    try {
-                        apiService.group().part(reqs[0]).execute();
-                    } catch (IOException ex) {
-                        Log.d(TAG, ex.getMessage(), ex);
-                    }
-                    return null;
-                }
-            }).execute(partGroupRequest);
-        }
+        Util.sendGcmMessage("part");
     }
 
     @Override

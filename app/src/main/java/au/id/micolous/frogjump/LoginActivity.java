@@ -49,7 +49,6 @@ import java.util.List;
 
 public class LoginActivity extends AppCompatActivity {
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
-    //private static final int REQUEST_CODE_PICK_ACCOUNT = 1000;
     private static final String TAG = "LoginActivity";
 
     private BroadcastReceiver mRegistrationBroadcastReceiver;
@@ -57,29 +56,14 @@ public class LoginActivity extends AppCompatActivity {
     private Frogjump apiService;
     private EditText txtGroupId;
     private boolean auto_join = false;
-    //private String google_account;
 
-    /*
-    private void showAccountPicker() {
-        Intent accountChooserIntent = AccountPicker.newChooseAccountIntent(null, null,
-                new String[]{"com.google"}, false, null, null, null, null);
-        startActivityForResult(accountChooserIntent, REQUEST_CODE_PICK_ACCOUNT);
-    }
-    */
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-        /*
-        google_account = sharedPreferences.getString(ApplicationPreferences.GOOGLE_ACCOUNT, null);
-        if (google_account == null) {
-            // This is probably first run, make the user choose an account
-            showAccountPicker();
-        }
-        */
+
 
         lblStatus = (TextView) findViewById(R.id.lblStatus);
         txtGroupId = (EditText) findViewById(R.id.txtGroupId);
@@ -106,26 +90,6 @@ public class LoginActivity extends AppCompatActivity {
         lblStatus.setText("Connecting to Frogjump API...");
 
         Util.updateCheck(apiService, this);
-
-        String gcm_token = sharedPreferences.getString(ApplicationPreferences.GCM_TOKEN, null);
-        if (gcm_token != null) {
-            FrogjumpApiMessagesPartGroupRequest partGroupRequest = new FrogjumpApiMessagesPartGroupRequest();
-            partGroupRequest.setGcmToken(gcm_token);
-
-            (new AsyncTask<FrogjumpApiMessagesPartGroupRequest, Void, Void>() {
-
-                @Override
-                protected Void doInBackground(FrogjumpApiMessagesPartGroupRequest... reqs) {
-                    try {
-                        apiService.group().part(reqs[0]).execute();
-                    } catch (IOException ex) {
-                        Log.d(TAG, ex.getMessage(), ex);
-                    }
-                    return null;
-                }
-            }).execute(partGroupRequest);
-        }
-
         lblStatus.setText("Connecting to Cloud Messaging...  If this takes more than a few seconds, rotate your device to try again.");
 
         mRegistrationBroadcastReceiver = new BroadcastReceiver() {
@@ -135,6 +99,9 @@ public class LoginActivity extends AppCompatActivity {
                 boolean sentToken = sharedPreferences.getBoolean(ApplicationPreferences.SENT_TOKEN_TO_SERVER, false);
                 if (sentToken) {
                     lblStatus.setText("Acquired token from Cloud Messaging.");
+                    // Leave any group we are a member of.
+                    Util.sendGcmMessage("part");
+
                     sensitize(true);
 
                     // Check if there is an auto-join for us
@@ -156,31 +123,7 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        /*
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-        if (requestCode == REQUEST_CODE_PICK_ACCOUNT) {
-            // We got a response from the account picker.
-            if (resultCode == RESULT_OK) {
-                google_account = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
-                sharedPreferences.edit()
-                        .putString(ApplicationPreferences.GOOGLE_ACCOUNT, google_account)
-                        .apply();
-            } else if (resultCode == RESULT_CANCELED) {
-                if (google_account == null) {
-                    google_account = sharedPreferences.getString(ApplicationPreferences.GOOGLE_ACCOUNT, null);
-                }
-
-                if (google_account == null) {
-                    Toast.makeText(this, R.string.must_pick_account, Toast.LENGTH_LONG).show();
-                    finish();
-                }
-            }
-        }
-        */
-    }
 
     @Override
     public void onNewIntent(Intent intent) {
@@ -281,8 +224,6 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     public void onBtnJoinGroupClick(View view) {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-
         // Validate the group ID first
         int group_id;
         try {
@@ -305,47 +246,9 @@ public class LoginActivity extends AppCompatActivity {
         txtGroupId.setText(group_id_s);
         lblStatus.setText("Attempting to join group " + group_id_s);
 
-        // We need to join a group ID.
-        String token = sharedPreferences.getString(ApplicationPreferences.GCM_TOKEN, null);
-        if (token == null) {
-            // bail
-            lblStatus.setText("No GCM token available");
-            return;
-        }
-
-        // Lets make a callback to the web service
-        FrogjumpApiMessagesJoinGroupRequest req = new FrogjumpApiMessagesJoinGroupRequest();
-        req.setGcmToken(token);
-        req.setGroupId(group_id_s);
-
-        (new AsyncTask<FrogjumpApiMessagesJoinGroupRequest, Void, FrogjumpApiMessagesGroupResponse>() {
-            @Override
-            protected FrogjumpApiMessagesGroupResponse doInBackground(FrogjumpApiMessagesJoinGroupRequest... requests) {
-                FrogjumpApiMessagesGroupResponse res = null;
-
-                try {
-                    res = apiService.group().join(requests[0]).execute();
-                } catch (IOException ex) {
-                    Log.d(TAG, ex.getMessage(), ex);
-                }
-                return res;
-            }
-
-            protected void onPostExecute(FrogjumpApiMessagesGroupResponse res) {
-                if (res == null) {
-                    // Error happened
-                    lblStatus.setText("Error getting token from Frogjump API");
-                    return;
-                }
-
-                // Use the response
-                if (res.getSuccess()) {
-                    lblStatus.setText("Group join request sent. Waiting to be added to group...");
-                } else {
-                    lblStatus.setText("Group join failed. Maybe the Group ID is wrong or expired?");
-                }
-            }
-        }).execute(req);
+        Bundle message = new Bundle();
+        message.putString("g", group_id_s);
+        Util.sendGcmMessage("knock", message);
     }
 
     public void onBtnAboutClick(View view) {
@@ -358,50 +261,8 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     public void onBtnCreateGroupClick(View view) {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-
-        // We need to request a new group ID from the server.
-        String token = sharedPreferences.getString(ApplicationPreferences.GCM_TOKEN, null);
-        if (token == null) {
-            // bail
-            lblStatus.setText("No GCM token available");
-            return;
-        }
-
-        // Lets make a callback to the web service
-        FrogjumpApiMessagesCreateGroupRequest req = new FrogjumpApiMessagesCreateGroupRequest();
-        req.setGcmToken(token);
-
         lblStatus.setText("Attempting to create new group...");
-
-        (new AsyncTask<FrogjumpApiMessagesCreateGroupRequest, Void, FrogjumpApiMessagesGroupResponse>() {
-            @Override
-            protected FrogjumpApiMessagesGroupResponse doInBackground(FrogjumpApiMessagesCreateGroupRequest... requests) {
-                FrogjumpApiMessagesGroupResponse res = null;
-
-                try {
-                    res = apiService.group().create(requests[0]).execute();
-                } catch (IOException ex) {
-                    Log.d(TAG, ex.getMessage(), ex);
-                }
-                return res;
-            }
-
-            protected void onPostExecute(FrogjumpApiMessagesGroupResponse res) {
-                if (res == null) {
-                    // Error happened
-                    lblStatus.setText("Error getting token from Frogjump API");
-                    return;
-                }
-
-                // Use the response
-                if (res.getSuccess()) {
-                    lblStatus.setText("Group created. Waiting to be added to group...");
-                } else {
-                    lblStatus.setText("Group creation failed.");
-                }
-            }
-        }).execute(req);
+        Util.sendGcmMessage("create");
     }
 
 }

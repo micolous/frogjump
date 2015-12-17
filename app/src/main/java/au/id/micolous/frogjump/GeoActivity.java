@@ -59,7 +59,7 @@ public class GeoActivity extends AppCompatActivity implements GoogleApiClient.On
     public static final String TAG = "GeoActivity";
     private String gcm_token;
     private int group_id;
-    private String group_key;
+    private Context app_context;
     //private GoogleApiClient mGoogleApiClient;
     //private String google_account;
 
@@ -68,6 +68,7 @@ public class GeoActivity extends AppCompatActivity implements GoogleApiClient.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_geo);
 
+        app_context = getApplicationContext();
         /*
         try {
             ApplicationInfo ai = getPackageManager().getApplicationInfo(getPackageName(), PackageManager.GET_META_DATA);
@@ -81,12 +82,11 @@ public class GeoActivity extends AppCompatActivity implements GoogleApiClient.On
 
         gcm_token = sharedPreferences.getString(ApplicationPreferences.GCM_TOKEN, null);
         group_id = sharedPreferences.getInt(ApplicationPreferences.GROUP_ID, 0);
-        group_key = sharedPreferences.getString(ApplicationPreferences.GROUP_KEY, null);
 
-        if (gcm_token == null || group_key == null) {
+        if (gcm_token == null) {
             // drop out, we can't continue.
             Log.i(TAG, "Cannot find group_key, gcm_token, or otherwise not registered");
-            showToast(R.string.broadcast_login_req);
+            Util.showToast(app_context, R.string.broadcast_login_req);
             finish();
             return;
         }
@@ -132,7 +132,7 @@ public class GeoActivity extends AppCompatActivity implements GoogleApiClient.On
 
 
         // We don't support non-geo links yet.
-        showToast(R.string.broadcast_not_supported);
+        Util.showToast(app_context, R.string.broadcast_not_supported);
         return false;
     }
 
@@ -176,7 +176,7 @@ public class GeoActivity extends AppCompatActivity implements GoogleApiClient.On
                     if (ll == null) {
                         // Type 4, we can't handle
                         Log.i(TAG, "Cannot handle Type 4 (geocoder required) geo URIs");
-                        showToast(R.string.broadcast_not_supported);
+                        Util.showToast(app_context, R.string.broadcast_not_supported);
                         return false;
                     }
 
@@ -200,7 +200,7 @@ public class GeoActivity extends AppCompatActivity implements GoogleApiClient.On
                 if (ll == null) {
                     // Something weird happened...
                     Log.i(TAG, "Error handling type 1/2 location " + q);
-                    showToast(R.string.broadcast_not_supported);
+                    Util.showToast(app_context, R.string.broadcast_not_supported);
                     return false;
                 }
             }
@@ -302,12 +302,12 @@ public class GeoActivity extends AppCompatActivity implements GoogleApiClient.On
                 return true;
             } else {
                 Log.i(TAG, "Error handling gmaps URL " + geoLocation.toString());
-                showToast(R.string.broadcast_not_supported);
+                Util.showToast(app_context, R.string.broadcast_not_supported);
                 return false;
             }
         }
 
-        showToast(R.string.broadcast_not_supported);
+        Util.showToast(app_context, R.string.broadcast_not_supported);
         return false;
     }
 
@@ -339,13 +339,7 @@ public class GeoActivity extends AppCompatActivity implements GoogleApiClient.On
     private void dispatchLatLng(long latE6, long lngE6) {
         Log.i(TAG, "Dispatching " + latE6 + "," + lngE6);
 
-        final Frogjump apiService = Util.getApiServiceHandle(null);
-
         Bundle msg = new Bundle();
-        // Action
-        msg.putString("a", "Send");
-        // client Version
-        msg.putString("v", Integer.toString(Util.getVersionCode()));
         // Group id
         msg.putString("g", Integer.toString(group_id));
         // Y (latitude)
@@ -353,40 +347,7 @@ public class GeoActivity extends AppCompatActivity implements GoogleApiClient.On
         // X (longitude)
         msg.putString("x", Long.toString(lngE6));
 
-        Util.sendGcmMessage(msg);
-
-        // Lets make a callback to the web service
-        FrogjumpApiMessagesPostMessageRequest req = new FrogjumpApiMessagesPostMessageRequest();
-        req.setGcmToken(gcm_token);
-        req.setGroupKey(group_key);
-        req.setLatE6(latE6);
-        req.setLngE6(lngE6);
-
-        (new AsyncTask<FrogjumpApiMessagesPostMessageRequest, Void, FrogjumpApiMessagesGroupResponse>() {
-            @Override
-            protected FrogjumpApiMessagesGroupResponse doInBackground(FrogjumpApiMessagesPostMessageRequest... requests) {
-                FrogjumpApiMessagesGroupResponse res = null;
-
-                try {
-                    res = apiService.group().post(requests[0]).execute();
-                } catch (IOException ex) {
-                    Log.d(TAG, ex.getMessage(), ex);
-                }
-                return res;
-            }
-
-            protected void onPostExecute(FrogjumpApiMessagesGroupResponse res) {
-                if (res == null) {
-                    // Error happened
-                    Log.i(TAG, "Error sending message");
-                    showToast(R.string.broadcast_fail);
-                } else {
-                    // All ok
-                    Log.i(TAG, "Send message!");
-                    showToast(R.string.broadcast_success);
-                }
-            }
-        }).execute(req);
+        Util.sendGcmMessage("share", msg);
     }
 
     /*
@@ -457,17 +418,10 @@ public class GeoActivity extends AppCompatActivity implements GoogleApiClient.On
     }
     */
 
-    private void showToast(int resId) {
-        String message = getString(resId);
-        Context context = getApplicationContext();
-        Toast toast = Toast.makeText(context, message, Toast.LENGTH_LONG);
-        toast.show();
-    }
-
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
         Log.e(TAG, "onConnectionFailed, error code = " + connectionResult.getErrorCode());
-        showToast(R.string.api_client_fail);
+        Util.showToast(app_context, R.string.api_client_fail);
     }
 
 }
