@@ -35,16 +35,9 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.appspot.frogjump_cloud.frogjump.Frogjump;
-import com.appspot.frogjump_cloud.frogjump.model.FrogjumpApiMessagesCreateGroupRequest;
-import com.appspot.frogjump_cloud.frogjump.model.FrogjumpApiMessagesGroupResponse;
-import com.appspot.frogjump_cloud.frogjump.model.FrogjumpApiMessagesJoinGroupRequest;
-import com.appspot.frogjump_cloud.frogjump.model.FrogjumpApiMessagesPartGroupRequest;
-import com.appspot.frogjump_cloud.frogjump.model.FrogjumpApiMessagesProductVersionRequest;
-import com.appspot.frogjump_cloud.frogjump.model.FrogjumpApiMessagesProductVersionResponse;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
-import java.io.IOException;
 import java.util.List;
 
 public class LoginActivity extends AppCompatActivity {

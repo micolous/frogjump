@@ -32,10 +32,8 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.appspot.frogjump_cloud.frogjump.Frogjump;
-import com.appspot.frogjump_cloud.frogjump.model.FrogjumpApiMessagesPartGroupRequest;
 import com.google.zxing.integration.android.IntentIntegrator;
 
-import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
     public static final String TAG = "MainActivity";

@@ -19,16 +19,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.Toast;
-
-import com.appspot.frogjump_cloud.frogjump.Frogjump;
-import com.appspot.frogjump_cloud.frogjump.model.FrogjumpApiMessagesGroupResponse;
-import com.appspot.frogjump_cloud.frogjump.model.FrogjumpApiMessagesPostMessageRequest;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
