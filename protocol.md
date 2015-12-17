@@ -47,7 +47,9 @@ The server should respond with a `kick` message.
 
 ### `join` (Client has been added to a group)
 
-* `i`: Group ID. This must be an integer.
+* `g`: Group ID. This must be an integer.
+
+Note: older versions of the protocol call this parameter `i`, and include additional parameter `k` for communicating with the older Endpoints API.
 
 ### `goto` (Navigate to the given location)
 

@@ -50,7 +50,7 @@ public class GcmIntentService extends GcmListenerService {
 
             if (action.equalsIgnoreCase("join")) {
                 // We got a login message, we need to switch our views
-                String group_id_s = extras.getString("i");
+                String group_id_s = extras.getString("g");
                 if (group_id_s == null) {
                     return;
                 }

@@ -32,6 +32,10 @@ If Google Maps already has navigation running, it will prompt the user to allow 
 * GCM registration is fragile.  Rotate your device to retry the connection.
 * The UI is ugly.
 
+## Protocol ##
+
+The backend Frogjump protocol may have backwards compatibility broken at any time.  Always use the newest version of the client.  From v0.1.3, you will be warned on startup if an update is required for protocol compatibility.
+
 ## Lawyercat related bits ##
 
 Copyright 2015 Michael Farrell.

@@ -96,7 +96,7 @@ class Client(object):
 		self.db.remove_from_group(sender)
 		group_id = int(payload['g'])
 		if self.db.add_to_group(group_id, sender):
-			self.sendMessage(sender, dict(a='Join', i=str(group_id)))
+			self.sendMessage(sender, dict(a='join', i=str(group_id)))
 
 		else:
 			self.sendMessage(sender, dict(a='nojoin', g=str(group_id)))
@@ -108,7 +108,7 @@ class Client(object):
 		print 'create: %r' % (sender,)
 		self.db.remove_from_group(sender)
 		group_id = self.db.create_group(sender)
-		self.sendMessage(sender, dict(a='Join', i=str(group_id)))
+		self.sendMessage(sender, dict(a='join', i=str(group_id)))
 
 	def cmd_part(self, sender):
 		print 'part: %r' % (sender,)
