@@ -26,6 +26,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Looper;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.widget.Toast;
@@ -169,6 +170,7 @@ public class Util {
     }
 
     public static void showToast(Context context, int resId) {
+        Looper.prepare();
         String message = context.getString(resId);
         Toast toast = Toast.makeText(context, message, Toast.LENGTH_LONG);
         toast.show();
