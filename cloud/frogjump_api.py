@@ -20,8 +20,7 @@ class FrogjumpApi(remote.Service):
 		path='version', http_method='POST',
 		name='version')
 	def version(self, request):
-		if request.version_code >= 5:
-			return ProductVersionResponse(new_version=False)
+		# This is a legacy endpoint, always say we need a new version.
 		return ProductVersionResponse(new_version=True)
 
 APPLICATION = endpoints.api_server([FrogjumpApi], restricted=False)
