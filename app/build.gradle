@@ -64,23 +64,4 @@ dependencies {
     compile 'com.android.support:appcompat-v7:23.1.1'
     // Google Play Services
     compile 'com.google.android.gms:play-services-gcm:8.3.0'
-    // Google API client library
-    compile('com.google.api-client:google-api-client:1.18.0-rc') {
-        // Exclude artifacts that the Android SDK/Runtime provides.
-        exclude(group: 'xpp3', module: 'xpp3')
-        exclude(group: 'org.apache.httpcomponents', module: 'httpclient')
-        exclude(group: 'junit', module: 'junit')
-        exclude(group: 'com.google.android', module: 'android')
-    }
-    compile('com.google.api-client:google-api-client-android:1.21.0') {
-        // Exclude play services, since we're not using this yet.
-        exclude(group: 'com.google.android.gms:play-services', module: 'google-play-services')
-    }
-    // Android extensions for Google HTTP Client.
-    compile('com.google.http-client:google-http-client-android:1.21.0') {
-        exclude(group: 'com.google.android', module: 'android')
-    }
-
-    //compile 'com.google.apis:google-api-services-urlshortener:v1-rev41-1.21.0'
-    //compile 'com.google.android.gms:play-services-location:8.3.0'
 }

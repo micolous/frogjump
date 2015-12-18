@@ -18,7 +18,6 @@ package au.id.micolous.frogjump;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -31,7 +30,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import com.appspot.frogjump_cloud.frogjump.Frogjump;
 import com.google.zxing.integration.android.IntentIntegrator;
 
 
@@ -42,7 +40,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private NavigationMode navigationMode;
     private int group_id;
     private TextView lblGroupId;
-    private Frogjump apiService;
 
     public enum NavigationMode {
         OFF (0),
@@ -77,7 +74,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        apiService = Util.getApiServiceHandle(null);
 
         group_id = sharedPreferences.getInt(ApplicationPreferences.GROUP_ID, 0);
 

@@ -21,7 +21,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
@@ -34,7 +33,6 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.appspot.frogjump_cloud.frogjump.Frogjump;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
@@ -46,7 +44,6 @@ public class LoginActivity extends AppCompatActivity {
 
     private BroadcastReceiver mRegistrationBroadcastReceiver;
     private TextView lblStatus;
-    private Frogjump apiService;
     private EditText txtGroupId;
     private boolean auto_join = false;
 
@@ -73,8 +70,6 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
-        apiService = Util.getApiServiceHandle(null);
-
         setupUI();
 
         // Lets see if there was a Web Intent fired to start us up
@@ -82,7 +77,7 @@ public class LoginActivity extends AppCompatActivity {
 
         lblStatus.setText("Connecting to Frogjump API...");
 
-        Util.updateCheck(apiService, this);
+        Util.updateCheck(this);
         lblStatus.setText("Connecting to Cloud Messaging...  If this takes more than a few seconds, rotate your device to try again.");
 
         mRegistrationBroadcastReceiver = new BroadcastReceiver() {
