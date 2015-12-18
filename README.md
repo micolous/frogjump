@@ -2,7 +2,7 @@
 
 **Frogjump** is a remote control program for [Google Maps for Android](https://play.google.com/store/apps/details?id=com.google.android.apps.maps).
 
-It consists of an Android application, which can both send and recieve maps links, and an [App Engine (GAE)](https://cloud.google.com/appengine/) backend which acts as a broker for groups.  It uses [Google Cloud Messaging (GCM)](https://developers.google.com/cloud-messaging/) in order to broadcast messages to groups, and [Cloud Endpoints](https://cloud.google.com/endpoints/) to connect between the Android and GAE.
+It consists of an Android application, which can both send and recieve maps links, and a Python/Twisted backend which acts as a broker for groups.  It uses [Google Cloud Messaging (GCM)](https://developers.google.com/cloud-messaging/) in order to broadcast messages to groups and back-channel communications.
 
 This allows (mostly) hands-free remote control of Google Maps for Android navigation, so that a driver can use their mobile phone with Google Maps while the passengers set the destination.
 
@@ -36,6 +36,12 @@ If Google Maps already has navigation running, it will prompt the user to allow 
 
 The backend Frogjump protocol may have backwards compatibility broken at any time.  Always use the newest version of the client.  From v0.1.3, you will be warned on startup if an update is required for protocol compatibility.
 
+Further documentation is available in [protocol.md](protocol.md).
+
+Versions v0.1.3 and older use the `cloud` backend service for communications.  In v0.1.4, this has been stubbed out to minimum in order to support directing old users to upgrade immediately.
+
+Versions v0.1.4 and later use the `cloud2` backend service for communications.
+
 ## Lawyercat related bits ##
 
 Copyright 2015 Michael Farrell.
@@ -46,18 +52,20 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 
 You should have received a copy of the GNU General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+Under section 7 of the GNU General Public License v3, the following "further restrictions" apply to this program:
+
+* (b) You must preserve reasonable legal notices and author attributions in the program.
+* (c) You must not misrepresent the origin of this program, and need to mark modified versions in reasonable ways as different from the original version (such as changing the name and logos).
+* (d) You may not use the names of licenses or authors for publicity purposes, without explicit written permission.
+
 A concession is provided to permit distribution of this software on Google Play Store, and other similar proprietary software distribution services, provided that:
 
 1. No charge (cost) is imposed for installation or use of the application.
 2. No advertising shown to users in the application.
 3. No bundled software components may be included where the author derives financial or other concessions for doing so.
-4. Forks of this project adopt a different application name and package name.
-5. All other terms of the GPLv3 are followed.
+4. All other terms of the GPLv3 are followed, including further section 7 restrictions (b, c, d) defined above.
 
 Please note that this software depends on Google Play Services in order to operate, which probably precludes it's inclusion in F-Droid and use on non-gapps Android devices.
 
-The auto-generated Frogjump API client library is licensed under the Apache Software License 2.0.  This does not apply to other components.
-
-
-
+This software is not endorsed by any mapping software provider used within.
 
