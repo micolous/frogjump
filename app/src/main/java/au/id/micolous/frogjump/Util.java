@@ -146,33 +146,6 @@ public class Util {
                     newVersionAlert(activity);
             }
         }).execute(activity);
-/*
-        FrogjumpApiMessagesProductVersionRequest productVersionRequest = new FrogjumpApiMessagesProductVersionRequest();
-        productVersionRequest.setVersionCode((long) Util.getVersionCode());
-        (new AsyncTask<FrogjumpApiMessagesProductVersionRequest, Void, FrogjumpApiMessagesProductVersionResponse>() {
-            @Override
-            protected FrogjumpApiMessagesProductVersionResponse doInBackground(FrogjumpApiMessagesProductVersionRequest... reqs) {
-                FrogjumpApiMessagesProductVersionResponse res = null;
-                try {
-                    res = apiService.version(reqs[0]).execute();
-                } catch (IOException ex) {
-                    Log.d(TAG, ex.getMessage(), ex);
-                }
-                return res;
-            }
-
-            @Override
-            protected void onPostExecute(FrogjumpApiMessagesProductVersionResponse productVersionResponse) {
-                if (productVersionResponse != null) {
-                    // We have a response, lets see if we need to prompt an update
-                    if (productVersionResponse.getNewVersion()) {
-                        newVersionAlert(activity);
-
-                    }
-                }
-            }
-        }).execute(productVersionRequest);
-*/
     }
 
     public static void sendGcmMessage(String action) {
