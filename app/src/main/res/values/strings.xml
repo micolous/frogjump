@@ -44,5 +44,10 @@ You should have received a copy of the GNU General Public License along with thi
     <string name="update_positive">Update now</string>
     <string name="update_negative">Later</string>
 
+    <string name="recall_title">Previous destination</string>
+    <string name="recall_positive">Show map</string>
+    <string name="recall_negative">Navigate</string>
+    <string name="recall_negative_unavailable">Cancel</string>
+
     <string name="cant_join_group">You can\'t join that group. Maybe it doesn\'t exist, or has expired?</string>
 </resources>

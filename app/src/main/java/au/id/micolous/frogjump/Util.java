@@ -48,6 +48,8 @@ import javax.net.ssl.HttpsURLConnection;
  */
 public class Util {
     public static final String TAG = "Util";
+    public static final String GOOGLE_MAPS = "com.google.android.apps.maps";
+    public static final String GPS_STATUS = "com.eclipsim.gpsstatus2";
     private static final Random rng = new Random();
 
     public static int getVersionCode() {
@@ -99,12 +101,10 @@ public class Util {
     }
 
     public static void updateCheck(final Activity activity) {
-
-        (new AsyncTask<Activity, Void, Boolean>() {
+        (new AsyncTask<Void, Void, Boolean>() {
             @Override
-            protected Boolean doInBackground(Activity... activities) {
+            protected Boolean doInBackground(Void... voids) {
                 try {
-                    Activity activity = activities[0];
                     String my_version = Integer.toString(getVersionCode());
                     URL url = new URL("https://micolous.github.io/frogjump/version.json");
                     HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
@@ -118,7 +118,10 @@ public class Util {
                     if (responseCode == 200) {
                         InputStream is = conn.getInputStream();
                         byte[] buffer = new byte[1024];
-                        is.read(buffer);
+                        if (is.read(buffer) == 0) {
+                            Log.i(TAG, "Error reading update file, 0 bytes");
+                            return false;
+                        }
                         JSONObject root = (JSONObject) new JSONTokener(new String(buffer, "US-ASCII")).nextValue();
 
                         if (root.has(my_version)) {
@@ -145,7 +148,7 @@ public class Util {
                 if (needsUpdate)
                     newVersionAlert(activity);
             }
-        }).execute(activity);
+        }).execute();
     }
 
     public static void sendGcmMessage(String action) {
@@ -187,5 +190,71 @@ public class Util {
         String message = context.getString(resId);
         Toast toast = Toast.makeText(context, message, Toast.LENGTH_LONG);
         toast.show();
+    }
+
+    public static void navigateTo(int latE6, int lngE6, MainActivity.NavigationMode navigationMode, Context context) {
+        // Lets make that a decimal again
+        String geoloc = String.format("%1$d.%2$06d,%3$d.%4$06d",
+                latE6 / 1000000, Math.abs(latE6 % 1000000),
+                lngE6 / 1000000, Math.abs(lngE6 % 1000000));
+
+        Intent intent = null;
+        if (navigationMode == MainActivity.NavigationMode.CROW_FLIES || navigationMode == MainActivity.NavigationMode.SHOW_MAP) {
+            geoloc = "geo:" + geoloc + "?q=" + geoloc;
+            Uri geouri = Uri.parse(geoloc);
+            intent = new Intent(Intent.ACTION_VIEW, geouri);
+            if (navigationMode == MainActivity.NavigationMode.CROW_FLIES) {
+                intent.setPackage(GPS_STATUS);
+            }
+        } else if (navigationMode != MainActivity.NavigationMode.OFF) {
+            geoloc = "google.navigation:q=" + geoloc;
+            switch (navigationMode) {
+                // https://developers.google.com/maps/documentation/directions/intro#Restrictions
+                // The intent service supports this parameter too, but it is not documented.
+                case DRIVING_AVOID_TOLLS:
+                    geoloc += "&avoid=tolls";
+                case DRIVING:
+                    geoloc += "&mode=d";
+                    break;
+                case CYCLING:
+                    geoloc += "&mode=b";
+                    break;
+                case WALKING:
+                    geoloc += "&mode=w";
+                    break;
+            }
+
+            // Launch Google Maps
+            Uri geouri = Uri.parse(geoloc);
+            intent = new Intent(Intent.ACTION_VIEW, geouri);
+            intent.setPackage(GOOGLE_MAPS);
+        }
+
+        if (intent != null) {
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(intent);
+        }
+    }
+
+    /**
+     * Prompts to install a package if it is not installed.
+     * @param packageName Package name to check for.
+     * @return True if the package was already installed, False otherwise.
+     */
+    public static boolean promptForInstall(String packageName, Context context) {
+        Intent intent = context.getPackageManager().getLaunchIntentForPackage(packageName);
+        if (intent == null) {
+            context.startActivity(new Intent(Intent.ACTION_VIEW,
+                    Uri.parse("market://details?id=" + packageName)));
+            return false;
+        }
+        return true;
+    }
+
+    public static String formatLatLngE6(int latE6, int lngE6) {
+        return String.format("%1$d.%2$06d °%3$s, %4$d.%5$06d °%6$s",
+                Math.abs(latE6 / 1000000), Math.abs(latE6 % 1000000), latE6 >= 0 ? "N" : "S",
+                Math.abs(lngE6 / 1000000), Math.abs(lngE6 % 1000000), lngE6 >= 0 ? "E" : "W");
+
     }
 }

@@ -30,8 +30,6 @@ import com.google.android.gms.gcm.GcmListenerService;
  */
 public class GcmIntentService extends GcmListenerService {
     public static final String TAG = "GcmIntentService";
-    public static final String GOOGLE_MAPS = "com.google.android.apps.maps";
-    public static final String GPS_STATUS = "com.eclipsim.gpsstatus2";
 
 
     @Override
@@ -69,8 +67,6 @@ public class GcmIntentService extends GcmListenerService {
                 Util.showToast(app_context, R.string.cant_join_group);
             } else if (action.equalsIgnoreCase("goto")) {
                 // We got an order to change our navigation target
-                MainActivity.NavigationMode navigationMode = MainActivity.NavigationMode.getById(sharedPreferences.getInt(ApplicationPreferences.NAVIGATION_MODE, 0));
-
                 String latE6_s = extras.getString("y");
                 String lngE6_s = extras.getString("x");
                 if (latE6_s == null || lngE6_s == null) {
@@ -83,53 +79,24 @@ public class GcmIntentService extends GcmListenerService {
                 boolean dryRun = false;
                 String dryRun_s = extras.getString("d");
                 if (dryRun_s != null) {
-                    dryRun = Integer.parseInt(dryRun_s) >= 1 ;
+                    dryRun = Integer.parseInt(dryRun_s) >= 1;
                 }
 
+                sharedPreferences.edit()
+                        .putInt(ApplicationPreferences.LAST_X, lngE6)
+                        .putInt(ApplicationPreferences.LAST_Y, latE6)
+                        .apply();
+
+                MainActivity.NavigationMode navigationMode = MainActivity.NavigationMode.getById(sharedPreferences.getInt(ApplicationPreferences.NAVIGATION_MODE, 0));
                 Log.i(TAG, "Goto: " + navigationMode + " at " + latE6 + "," + lngE6 + " (dry_run = " + dryRun + ")");
 
-                // Lets make that a decimal again
-                String geoloc = String.format("%1$d.%2$06d,%3$d.%4$06d",
-                        latE6 / 1000000, Math.abs(latE6 % 1000000),
-                        lngE6 / 1000000, Math.abs(lngE6 % 1000000));
-
                 if (!dryRun) {
-                    if (navigationMode == MainActivity.NavigationMode.CROW_FLIES) {
-                        geoloc = "geo:" + geoloc;
-                        Uri geouri = Uri.parse(geoloc);
-                        Intent intent = new Intent(Intent.ACTION_VIEW, geouri);
-                        intent.setPackage(GPS_STATUS);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        startActivity(intent);
-
-                    } else if (navigationMode != MainActivity.NavigationMode.OFF) {
-                        geoloc = "google.navigation:q=" + geoloc;
-                        switch (navigationMode) {
-                            // https://developers.google.com/maps/documentation/directions/intro#Restrictions
-                            // The intent service supports this parameter too, but it is not documented.
-                            case DRIVING_AVOID_TOLLS:
-                                geoloc += "&avoid=tolls";
-                            case DRIVING:
-                                geoloc += "&mode=d";
-                                break;
-                            case CYCLING:
-                                geoloc += "&mode=b";
-                                break;
-                            case WALKING:
-                                geoloc += "&mode=w";
-                                break;
-                        }
-
-                        // Launch Google Maps
-                        Uri geouri = Uri.parse(geoloc);
-                        Intent intent = new Intent(Intent.ACTION_VIEW, geouri);
-                        intent.setPackage(GOOGLE_MAPS);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        startActivity(intent);
-                    }
+                    Util.navigateTo(latE6, lngE6, navigationMode, this);
                 }
             }
 
         }
     }
+
+
 }
