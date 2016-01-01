@@ -45,4 +45,14 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:onClick="onShareMarkerClick" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Previous destination"
+        android:id="@+id/btnRecall"
+        android:layout_alignBottom="@+id/btnShareMarker"
+        android:layout_toRightOf="@+id/btnShareMarker"
+        android:layout_toEndOf="@+id/btnShareMarker"
+        android:onClick="onBtnRecallClick" />
 </RelativeLayout>
