@@ -67,5 +67,5 @@ A concession is provided to permit distribution of this software on Google Play 
 
 Please note that this software depends on Google Play Services in order to operate, which probably precludes it's inclusion in F-Droid and use on non-gapps Android devices.
 
-This software is not endorsed by any mapping software provider used within.
+*This software is not endorsed by any mapping software provider used within.*
 
