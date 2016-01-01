@@ -117,7 +117,7 @@ class FrogjumpDB(object):
 	def add_to_group(self, group_id, gcm_token):
 		cur = self._con.cursor()
 		if self.is_group(group_id):
-			cur.execute('INSERT INTO groups_member (group_id, member) VALUES (?, ?)', (group_id, member))
+			cur.execute('INSERT INTO groups_member (group_id, member) VALUES (?, ?)', (group_id, gcm_token))
 			self._con.commit()
 			return True
 
