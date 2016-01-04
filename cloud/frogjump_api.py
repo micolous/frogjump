@@ -10,7 +10,6 @@ if 'DEBUG_CLIENT_ID' in environ:
 else:
 	# For endpoints generator.
 	CLIENT_IDS = []
-	GCM_API_KEY = None
 
 @endpoints.api(name='frogjump', version='v1',
 	description='Frogjump backend service API',

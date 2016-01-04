@@ -6,7 +6,7 @@ It is an App Engine application written in Python, which uses Endpoints.
 
 The job of this is to present an Endpoints service which Frogjump for Android can communicate with.  All the outgoing messages from the client are API calls.
 
-With the Frogjump `cloud2` protocol, this is reduced to a basic service to do update checks.
+With the Frogjump `cloud2` protocol, this is reduced to a basic service to do update checks. This tells the legacy clients that they should send out an update message.
 
 ## Setting up the Cloud SDK
 
@@ -28,5 +28,4 @@ This is done in the file `secrets.yaml`.  This is excluded from the git reposito
 env_variables:
   DEBUG_CLIENT_ID: 'xxxxx.apps.googleusercontent.com'
   RELEASE_CLIENT_ID: 'xxxxx.apps.googleusercontent.com'
-  GCM_API_KEY: 'xxxxx'
 ```
