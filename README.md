@@ -12,7 +12,7 @@ There is also support for [_as the crow flies_](https://en.wikipedia.org/wiki/As
 
 The Android application starts by registering to receive messages with GCM.
 
-Whether an existing group ID is joined, or a new group is created, a REST request is made to the GAE backend, containing the GCM client identifier.  The group is looked up or created in GAE datastore, and the GCM client identifier is added to the group.
+Whether an existing group ID is joined, or a new group is created, a request is made using GCM to backend.  The group is looked up or created in sqlite3, and the GCM client identifier is added to the group.
 
 The GAE backend will then send a GCM message telling the client that it is now part of the group (Join).  The client responds by changing view, and offering options for changing navigation type (off, driving, cycling, walking, as the crow flies).
 
