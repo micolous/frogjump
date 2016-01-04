@@ -49,5 +49,5 @@ You should have received a copy of the GNU General Public License along with thi
     <string name="recall_negative_unavailable">Cancel</string>
 
     <string name="cant_join_group">You can\'t join that group. Maybe it doesn\'t exist, or has expired?</string>
-    <string name="copyright">Copyright 2015 Michael Farrell</string>
+    <string name="copyright">Copyright 2015 – 2016 Michael Farrell</string>
 </resources>

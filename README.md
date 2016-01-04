@@ -1,5 +1,7 @@
 # Frogjump #
 
+Version: v0.1.4
+
 **Frogjump** is a remote control program for [Google Maps for Android](https://play.google.com/store/apps/details?id=com.google.android.apps.maps).
 
 It consists of an Android application, which can both send and recieve maps links, and a Python/Twisted backend which acts as a broker for groups.  It uses [Google Cloud Messaging (GCM)](https://developers.google.com/cloud-messaging/) in order to broadcast messages to groups and back-channel communications.
@@ -44,7 +46,7 @@ Versions v0.1.4 and later use the `cloud2` backend service for communications.
 
 ## Lawyercat related bits ##
 
-Copyright 2015 Michael Farrell.
+Copyright 2015 – 2016 Michael Farrell.
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
