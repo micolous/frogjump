@@ -12,11 +12,11 @@ There is also support for [_as the crow flies_](https://en.wikipedia.org/wiki/As
 
 The Android application starts by registering to receive messages with GCM.
 
-Whether an existing group ID is joined, or a new group is created, a request is made using GCM to backend.  The group is looked up or created in sqlite3, and the GCM client identifier is added to the group.
+Whether an existing group ID is joined, or a new group is created, a request is made using GCM to backend (cloud2).  The group is looked up or created in sqlite3, and the GCM client identifier is added to the group.
 
-The GAE backend will then send a GCM message telling the client that it is now part of the group (Join).  The client responds by changing view, and offering options for changing navigation type (off, driving, cycling, walking, as the crow flies).
+The backend will then send a GCM message telling the client that it is now part of the group (Join).  The client responds by changing view, and offering options for changing navigation type (off, driving, cycling, walking, as the crow flies).
 
-All clients will hook the `geo:` URL by way of intents, as well as Google Maps URLs.  When one of these links is opened on the device, the option is given to broadcast the target by Frogjump.  When a client broadcasts, it sends a message to the GAE backend, asking for that message to be broadcast to all GCM clients that are part of this group.
+All clients will hook the `geo:` URL by way of intents, as well as Google Maps URLs.  When one of these links is opened on the device, the option is given to broadcast the target by Frogjump.  When a client broadcasts, it sends a message to the backend, asking for that message to be broadcast to all GCM clients that are part of this group.
 
 Clients then listen for an incoming GCM message (Goto), which contains latitude and longitude of the destination.  When a message is received, it is processed according to local navigation preferences, then an intent is launched to start up Google Maps with the appropriate modes.
 
