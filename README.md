@@ -54,7 +54,7 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 
 You should have received a copy of the GNU General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-Under section 7 of the GNU General Public License v3, the following "further restrictions" apply to this program:
+Under section 7 of the GNU General Public License v3, the following additional terms apply to this program:
 
 * (b) You must preserve reasonable legal notices and author attributions in the program.
 * (c) You must not misrepresent the origin of this program, and need to mark modified versions in reasonable ways as different from the original version (such as changing the name and logos).
@@ -65,7 +65,7 @@ A concession is provided to permit distribution of this software on Google Play 
 1. No charge (cost) is imposed for installation or use of the application.
 2. No advertising shown to users in the application.
 3. No bundled software components may be included where the author derives financial or other concessions for doing so.
-4. All other terms of the GPLv3 are followed, including further section 7 restrictions (b, c, d) defined above.
+4. All other terms of the GPLv3 are followed, including additional section 7-compatible restrictions (b, c, d) defined above.
 
 Please note that this software depends on Google Play Services in order to operate, which probably precludes it's inclusion in F-Droid and use on non-gapps Android devices.
 
